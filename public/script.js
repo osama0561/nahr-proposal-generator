@@ -116,11 +116,12 @@ function parseHours(v){
   const raw = String(v||'').trim();
   const s = raw.replace(/[٠-٩]/g,d=>arabicDigits[d]);
   if (!s) return 0;
-  if (/اقل|أقل|less/i.test(raw) && /6|٦/.test(s)) return 3;
-  if (/اكثر|أكثر|\+/.test(raw)) return toNum(s) || 0;
   const nums = [...s.matchAll(/\d+(?:\.\d+)?/g)].map(m=>Number(m[0]));
+  if (!nums.length) return 0;
+  if (/اقل|أقل|less/i.test(raw)) return nums[0] / 2;
+  if (/اكثر|أكثر|more|\+/i.test(raw)) return nums[0] + Math.min(8, Math.max(2, nums[0] * 0.17));
   if (nums.length >= 2) return (nums[0]+nums[1])/2;
-  return nums[0] || 0;
+  return nums[0];
 }
 function pct(part,total){ return total ? Math.round((part/total)*100) : 0; }
 function personName(row){ return pick(row,['الاسم']) || 'غير محدد'; }
@@ -227,7 +228,7 @@ function buildAggregate(){
   const automationWishes = rows.map(r=>pick(r,['لو اختفت مهمة واحدة'])).filter(Boolean);
   const taskPairs = rows.flatMap(r=>repeatedTasks(r).map(([task,h])=>({task,hours:parseHours(h), owner:pick(r,['الاسم']), dept:pick(r,['القسم'])})));
   const totalTaskHours = taskPairs.reduce((s,t)=>s+(t.hours||0),0);
-  const baselineHours = rows.map(r=>toNum(pick(r,['مجموع الساعات الأسبوعية']))).filter(Boolean);
+  const baselineHours = rows.map(r=>parseHours(pick(r,['مجموع الساعات الأسبوعية']))).filter(Boolean);
   const totalBaseline = baselineHours.reduce((a,b)=>a+b,0);
   const scores = {
     prompt: avg(rows.map(r=>toNum(pick(r,['صياغة طلب واضح'])))),
