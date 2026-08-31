@@ -57,32 +57,34 @@ function rowWasteHours(row){
   return baseline || taskHours;
 }
 function compactResponsesForAi(rows){
+  const clip = (v, n=180) => String(v || '').slice(0,n);
   return rows.map(r=>({
-    name: personName(r),
-    dept: pick(r,['القسم']),
-    title: pick(r,['المسمى الوظيفي']),
+    name: clip(personName(r), 60),
+    dept: clip(pick(r,['القسم']), 80),
+    title: clip(pick(r,['المسمى الوظيفي']), 80),
     years: pick(r,['سنوات خبرتك','سنوات الخبرة']),
-    tasks: repeatedTasks(r).map(([task,h])=>`${task} (${h})`).join(' | '),
+    tasks: clip(repeatedTasks(r).map(([task,h])=>`${task} (${h})`).join(' | '), 500),
     taskHours: repeatedTasks(r).reduce((sum,[,h])=>sum+parseHours(h),0),
     baselineOpinion: pick(r,['مجموع الساعات الأسبوعية']),
-    output: pick(r,['ما أكثر ما تنتجه']),
-    aiUse: pick(r,['استخدامك لأدوات الذكاء الاصطناعي']),
-    reached: pick(r,['أبعد ما وصلت إليه']),
+    output: clip(pick(r,['ما أكثر ما تنتجه']), 160),
+    reached: clip(pick(r,['أبعد ما وصلت إليه']), 160),
     dataScore: skillValue(r,['ملفات وبيانات عملي','استخدام الأداة على ملفات']),
     automationScore: skillValue(r,['بناء خطوة أتمتة']),
-    obstacles: pick(r,['اختر كل ما ينطبق عليك']),
-    priority: pick(r,['أولويتك الأولى من التدريب']),
-    automationWish: pick(r,['لو اختفت مهمة واحدة'])
+    automationWish: clip(pick(r,['لو اختفت مهمة واحدة']), 180)
   }));
 }
 async function requestAiWasteEstimate(rows){
   try {
     setStatus('جاري تقدير الساعات فعليًا بالذكاء الاصطناعي...');
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 45000);
     const res = await fetch('/api/estimate-waste', {
       method:'POST',
       headers:{'content-type':'application/json'},
+      signal: controller.signal,
       body: JSON.stringify({ responses: compactResponsesForAi(rows) })
     });
+    clearTimeout(timeout);
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'AI estimate failed');
     return data;
@@ -340,6 +342,7 @@ ${diagnosticCards(a.diagnostics)}
 <h2>١٢. خطة التنفيذ</h2><ol><li>تحليل كل ردود النموذج وتجميعها حسب الأقسام والأولويات.</li><li>اجتماع فهم مع أصحاب القرار لتأكيد النطاق والفئات.</li><li>تصميم تدريب وتمارين حسب أهم ٣–٥ مهام متكررة.</li><li>تنفيذ التدريب وتطبيق القوالب.</li><li>قياس الأثر بعد ٩٠ يومًا.</li></ol>
 <h2>١٣. العرض المالي</h2><table class="generated-table"><tr><th>البند</th><th>القيمة</th></tr><tr><td>الهدر الشهري المحسوب</td><td>${money(a.economics.monthlyCost)}</td></tr><tr><td>قاعدة التسعير</td><td>${escapeHtml(a.economics.pricingRule)}</td></tr><tr><td>سعر التدريب المقترح</td><td>${money(a.economics.trainingPrice)}</td></tr><tr><td>ملاحظة</td><td>السعر محسوب تلقائيًا من الهدر الشهري، وليس مدخلًا يدويًا في النموذج.</td></tr></table><h2>١٤. الخطوة التالية</h2><p>اعتماد نطاق العمل وعدد المشاركين، ثم إرسال النسخة النهائية من العرض الفني والمالي.</p>`;
   $('proposal').innerHTML=html;
+  setStatus(state.aiWaste ? `تم توليد العرض باستخدام تقدير ${state.aiWaste.modelUsed || 'AI'} للساعات.` : 'تم توليد العرض باستخدام تقدير محافظ من الشيت لأن AI لم يرجع في الوقت المحدد.');
 }
 function htmlToMd(node){ return node.innerText.replace(/\n{3,}/g,'\n\n'); }
 function download(name, type, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
