@@ -12,8 +12,15 @@ const arabicDigits = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦'
 function normalize(s){ return String(s||'').replace(/[\u064B-\u065F]/g,'').trim(); }
 function toNum(v){ const s=String(v||'').replace(/[٠-٩]/g,d=>arabicDigits[d]).match(/-?\d+(\.\d+)?/); return s?Number(s[0]):0; }
 function pick(row, names){
+  const headers = state.headers.map(h => normalize(h));
   for (const name of names) {
-    const idx = state.headers.findIndex(h => normalize(h).includes(normalize(name)) || normalize(name).includes(normalize(h)));
+    const n = normalize(name);
+    const exact = headers.findIndex(h => h === n);
+    if (exact >= 0 && row[exact]) return row[exact];
+  }
+  for (const name of names) {
+    const n = normalize(name);
+    const idx = headers.findIndex(h => h.includes(n));
     if (idx >= 0 && row[idx]) return row[idx];
   }
   return '';
@@ -27,13 +34,122 @@ function splitMulti(v){ return String(v||'').split(/[,،;؛\n]+/).map(s=>s.trim(
 function countBy(items){ const m=new Map(); items.filter(Boolean).forEach(x=>m.set(x,(m.get(x)||0)+1)); return [...m.entries()].sort((a,b)=>b[1]-a[1]); }
 function topList(pairs, max=6){ return pairs.slice(0,max).map(([k,v])=>`<li>${escapeHtml(k)} <small>(${v})</small></li>`).join('') || '<li>غير محدد</li>'; }
 function avg(nums){ const arr=nums.filter(n=>Number.isFinite(n)&&n>0); return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : 'غير محدد'; }
+function dedupeRows(rows){
+  const seen = new Map(), unique = [], duplicates = [];
+  for (const row of rows) {
+    const name = normalize(pick(row,['الاسم'])).toLowerCase();
+    const email = normalize(pick(row,['Email','البريد','الإيميل'])).toLowerCase();
+    const key = email || `${name}|${normalize(pick(row,['القسم'])).toLowerCase()}`;
+    if (key && seen.has(key)) duplicates.push({ key, name: pick(row,['الاسم']) || key });
+    else { if (key) seen.set(key,true); unique.push(row); }
+  }
+  return { unique, duplicates };
+}
+function parseHours(v){
+  const raw = String(v||'').trim();
+  const s = raw.replace(/[٠-٩]/g,d=>arabicDigits[d]);
+  if (!s) return 0;
+  if (/اقل|أقل|less/i.test(raw) && /6|٦/.test(s)) return 3;
+  if (/اكثر|أكثر|\+/.test(raw)) return toNum(s) || 0;
+  const nums = [...s.matchAll(/\d+(?:\.\d+)?/g)].map(m=>Number(m[0]));
+  if (nums.length >= 2) return (nums[0]+nums[1])/2;
+  return nums[0] || 0;
+}
+function pct(part,total){ return total ? Math.round((part/total)*100) : 0; }
+function personName(row){ return pick(row,['الاسم']) || 'غير محدد'; }
+function skillValue(row, names){ return toNum(pick(row,names)); }
+function allSkillValues(row){
+  return [
+    skillValue(row,['صياغة طلب واضح']),
+    skillValue(row,['الحكم على جودة']),
+    skillValue(row,['ملفات وبيانات عملي','استخدام الأداة على ملفات']),
+    skillValue(row,['بناء خطوة أتمتة'])
+  ];
+}
+function topNames(items, max=8){ return items.slice(0,max).map(x=>escapeHtml(x.name || x)).join(' · ') || 'لا يوجد'; }
+function processClusters(taskPairs){
+  const patterns = [
+    ['التحصيل والمتأخرات', /تحصيل|متأخر|متاخر|مستحق|سداد|ايجار|إيجار/i],
+    ['واتساب وخدمة العملاء', /واتساب|whatsapp|رسائل|عميل|عملاء|ردود|شكاوى|شكاوي/i],
+    ['إدخال ونقل البيانات', /ادخال|إدخال|نقل|تحديث|بيانات|نظام|انظمة|أنظمة|اكسل|excel/i],
+    ['متابعة وإقفال المهام', /متابعة|اقفال|إقفال|مهام|تذكير|تنسيق/i],
+    ['الشؤون القانونية والقضايا', /قضية|قضايا|قانون|محكمة|عقد|عقود/i],
+    ['المالية والمطابقات', /مطابقة|ارصدة|أرصدة|رصيد|مالية|فاتورة|فواتير|تقرير مالي/i],
+    ['التقارير والتلخيص', /تقرير|تقارير|تلخيص|عرض|عروض|محضر/i]
+  ];
+  const counts = new Map();
+  for (const t of taskPairs) {
+    for (const [label, re] of patterns) if (re.test(t.task)) counts.set(label,(counts.get(label)||0)+1);
+  }
+  return [...counts.entries()].sort((a,b)=>b[1]-a[1]);
+}
+function buildDeepDiagnostics(a){
+  const rows = a.rows;
+  const skillDefs = [
+    ['صياغة طلب واضح','prompt',['صياغة طلب واضح']],
+    ['الحكم على جودة المخرَج','quality',['الحكم على جودة']],
+    ['التطبيق على بيانات العمل الحقيقية','data',['ملفات وبيانات عملي','استخدام الأداة على ملفات']],
+    ['بناء خطوة أتمتة مستقلة','automation',['بناء خطوة أتمتة']]
+  ];
+  const skillBreakdown = skillDefs.map(([label,key,names])=>{
+    const vals = rows.map(r=>skillValue(r,names)).filter(Boolean);
+    return { label, key, avg: avg(vals), low: vals.filter(v=>v<=2).length, lowPct: pct(vals.filter(v=>v<=2).length, vals.length), count: vals.length };
+  });
+  const dailyWeekly = rows.filter(r=>/يومي|يوميا|أسبوع|اسبوع|weekly|daily/i.test(pick(r,['استخدامك لأدوات الذكاء الاصطناعي'])));
+  const textOnly = rows.filter(r=>/كتابة|صياغة|نصوص|مسودات|تلخيص|محتوى/i.test(pick(r,['أبعد ما وصلت إليه'])) && !/ربط|أتمت|اتمت|workflow|make|n8n|zapier|power automate/i.test(pick(r,['أبعد ما وصلت إليه'])));
+  const integrationUsers = rows.filter(r=>/make|n8n|zapier|power automate|ربط|workflow|أتمت|اتمت/i.test((pick(r,['الأدوات التي جربتها'])+' '+pick(r,['أبعد ما وصلت إليه']))));
+  const taskHourByPerson = rows.map(r=>({ name: personName(r), dept: pick(r,['القسم']), taskHours: repeatedTasks(r).reduce((s,[,h])=>s+parseHours(h),0), baseline: parseHours(pick(r,['مجموع الساعات الأسبوعية'])) })).filter(x=>x.taskHours || x.baseline);
+  const blind = taskHourByPerson.filter(x=>x.taskHours>=40 && x.baseline>0 && x.baseline<=6);
+  const timeAnomalies = taskHourByPerson.filter(x=>x.taskHours>48);
+  const obstacleText = rows.flatMap(r=>splitMulti(pick(r,['اختر كل ما ينطبق عليك'])));
+  const countIncludes = (re)=>obstacleText.filter(x=>re.test(x)).length;
+  const governanceSignals = countIncludes(/سياسة|سرية|خصوصية|بيانات|مشاركة|مسموح|اعتماد/i);
+  const orgBlockers = {
+    time: countIncludes(/وقت|مشغول|ضغط/i),
+    trust: countIncludes(/ثقة|جودة|دقة|أخطاء|اخطاء/i),
+    notStarted: countIncludes(/لم أبدأ|لم ابدا|بجدية|لا أعرف من أين أبدأ|لا اعرف/i),
+    governance: governanceSignals
+  };
+  const writingDemand = rows.filter(r=>/جودة.*كتب|أكتب|اكتب|كتابة|صياغة/i.test(pick(r,['أولويتك الأولى من التدريب']))).length;
+  const automationDemand = rows.filter(r=>/أتمت|اتمت|autom/i.test(pick(r,['أولويتك الأولى من التدريب']))).length;
+  const annualHours = Math.round((a.totalBaseline || a.totalTaskHours) * 46);
+  const fte = annualHours ? (annualHours/1920).toFixed(1) : 'غير محدد';
+  const conservativeLow = annualHours ? Math.round(annualHours*0.30) : 0;
+  const conservativeHigh = annualHours ? Math.round(annualHours*0.40) : 0;
+  const champions = rows.filter(r=>skillValue(r,['بناء خطوة أتمتة'])>=4).map(r=>({name:personName(r), dept:pick(r,['القسم'])}));
+  const risks = rows.filter(r=>skillValue(r,['استعدادك لتطبيق'])>0 && skillValue(r,['استعدادك لتطبيق'])<=3).map(r=>({name:personName(r), readiness:skillValue(r,['استعدادك لتطبيق'])}));
+  const highSkillLowReadiness = rows.filter(r=>allSkillValues(r).every(v=>v>=4) && skillValue(r,['استعدادك لتطبيق'])<=3).map(r=>({name:personName(r), readiness:skillValue(r,['استعدادك لتطبيق'])}));
+  const clusters = processClusters(a.taskPairs);
+  return { skillBreakdown, dailyWeeklyCount: dailyWeekly.length, textOnlyCount: textOnly.length, integrationCount: integrationUsers.length, blind, timeAnomalies, orgBlockers, writingDemand, automationDemand, annualHours, fte, conservativeLow, conservativeHigh, champions, risks, highSkillLowReadiness, clusters };
+}
+function diagnosticCards(d){
+  const collapse = d.skillBreakdown.map(x=>`<tr><td>${escapeHtml(x.label)}</td><td>${escapeHtml(x.avg)}</td><td>${escapeHtml(x.low)} من ${escapeHtml(x.count)} (${escapeHtml(x.lowPct)}%)</td></tr>`).join('');
+  const blind = d.blind.slice(0,5).map(x=>`<li>${escapeHtml(x.name)}: ${escapeHtml(x.taskHours)} ساعة مهام → ${escapeHtml(x.baseline)} ساعات قابلة للأتمتة</li>`).join('') || '<li>لا توجد فجوة واضحة حسب الأرقام الحالية.</li>';
+  const anomalies = d.timeAnomalies.slice(0,6).map(x=>`<li>${escapeHtml(x.name)}: ${escapeHtml(x.taskHours)} ساعة أسبوعيًا في ثلاث مهام فقط</li>`).join('') || '<li>لا توجد أرقام شاذة كبيرة في العينة الحالية.</li>';
+  const championText = topNames(d.champions,8);
+  const riskText = topNames(d.risks.map(r=>`${r.name} (${r.readiness}/5)`),10);
+  const highRiskText = topNames(d.highSkillLowReadiness.map(r=>`${r.name} (${r.readiness}/5)`),8);
+  return `<h2>٣. القراءة التشخيصية للبيانات</h2>
+<h3>١. سلّم المهارة وأين ينهار</h3><table class="generated-table"><tr><th>البعد</th><th>المتوسط</th><th>نسبة ٢ فأقل</th></tr>${collapse}</table><p>${escapeHtml(d.dailyWeeklyCount)} من العينة يستخدمون أدوات الذكاء الاصطناعي يوميًا أو أسبوعيًا، لكن ${escapeHtml(d.textOnlyCount)} لم يتجاوزوا الكتابة/الصياغة، و${escapeHtml(d.integrationCount)} فقط ظهرت لديهم أدوات ربط أو أتمتة. هذه فجوة بين الاستخدام والعائد التشغيلي.</p>
+<h3>٢. الفريق لا يرى الفرصة كاملة</h3><ul>${blind}</ul><p>إذا ظهرت هذه الفجوة، يبدأ البرنامج بجلسة “رؤية الفرصة” قبل التدريب على الأدوات.</p>
+<h3>٣. جودة قياس الوقت</h3><ul>${anomalies}</ul><p>وجود أرقام عالية أو غير متسقة يعني أن خط الأساس نفسه يحتاج ضبط قبل وعد ROI نهائي.</p>
+<h3>٤. العوائق التنظيمية</h3><table class="generated-table"><tr><th>العائق</th><th>عدد الإشارات</th></tr><tr><td>الوقت</td><td>${escapeHtml(d.orgBlockers.time)}</td></tr><tr><td>الثقة بجودة المخرَج</td><td>${escapeHtml(d.orgBlockers.trust)}</td></tr><tr><td>لم يبدأ بجدية / لا يعرف البداية</td><td>${escapeHtml(d.orgBlockers.notStarted)}</td></tr><tr><td>سياسة الاستخدام والسرية والبيانات</td><td>${escapeHtml(d.orgBlockers.governance)}</td></tr></table>
+<h3>٥. الطلب معكوس عن الحاجة</h3><p>${escapeHtml(d.writingDemand)} اختاروا تحسين الكتابة/الصياغة مقابل ${escapeHtml(d.automationDemand)} فقط اختاروا الأتمتة صراحة. لذلك يعاد تأطير العرض من “دورة كتابة أفضل” إلى “استرداد وقت وبناء عمليات”.</p>
+<h3>٦. الفرصة مركّزة في عمليات</h3><ul>${topList(d.clusters,8)}</ul>
+<h3>٧. حجم الفرصة بأدنى تقدير</h3><p>إجمالي الفرصة المعلنة ≈ ${escapeHtml(d.annualHours)} ساعة سنويًا ≈ ${escapeHtml(d.fte)} وظائف بدوام كامل. التقدير المحافظ لأول سنة: ${escapeHtml(d.conservativeLow)}–${escapeHtml(d.conservativeHigh)} ساعة مستردة فعليًا.</p>
+<h3>٨. الأبطال والمخاطر</h3><p><b>أبطال داخليون محتملون:</b> ${championText}</p><p><b>مخاطر الدفعة الأولى:</b> ${riskText}</p><p><b>مهارة عالية مع استعداد منخفض:</b> ${highRiskText}</p>`;
+}
+
 function setStatus(msg){ $('loadStatus').textContent = msg; }
 function renderRows(){
   renderOverview();
 }
 function buildAggregate(){
-  const rows = state.rows || [];
+  const rawRows = state.rows || [];
+  const deduped = dedupeRows(rawRows);
+  const rows = deduped.unique;
   const people = rows.length;
+  const duplicateCount = deduped.duplicates.length;
   const depts = countBy(rows.map(r=>pick(r,['القسم'])));
   const titles = countBy(rows.map(r=>pick(r,['المسمى الوظيفي'])));
   const outputs = countBy(rows.flatMap(r=>splitMulti(pick(r,['ما أكثر ما تنتجه']))));
@@ -53,20 +169,21 @@ function buildAggregate(){
     automation: avg(rows.map(r=>toNum(pick(r,['بناء خطوة أتمتة'])))),
     readiness: avg(rows.map(r=>toNum(pick(r,['استعدادك لتطبيق']))))
   };
-  return { rows, people, depts, titles, outputs, aiUse, tools, obstacles, priorities, automationWishes, taskPairs, totalTaskHours, totalBaseline, scores };
+  const diagnostics = buildDeepDiagnostics({ rows, people, depts, titles, outputs, aiUse, tools, obstacles, priorities, automationWishes, taskPairs, totalTaskHours, totalBaseline, scores });
+  return { rows, people, duplicateCount, depts, titles, outputs, aiUse, tools, obstacles, priorities, automationWishes, taskPairs, totalTaskHours, totalBaseline, scores, diagnostics };
 }
 function renderOverview(){
   const a=buildAggregate();
   const box=$('companyOverview');
   if(!box) return;
   box.innerHTML = `<div class="overview-grid">
-    <div><b>${a.people}</b><span>عدد الردود</span></div>
+    <div><b>${a.people}</b><span>العينة بعد إزالة التكرار</span></div>
     <div><b>${a.depts.length}</b><span>الأقسام</span></div>
     <div><b>${a.totalBaseline || a.totalTaskHours}</b><span>ساعات أسبوعية متكررة</span></div>
   </div>
-  <p class="overview-note">العرض سيُبنى على كل الردود كمراجعة شركة كاملة. لا يتم استخدام رد فردي.</p>`;
+  <p class="overview-note">العرض سيُبنى على كل الردود كمراجعة شركة كاملة. لا يتم استخدام رد فردي. التكرارات المحذوفة: ${a.duplicateCount}</p>`;
 }
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 async function loadSheet(){
   const url=$('sheetUrl').value.trim();
   if(!url){ setStatus('ضع رابط Google Sheet أو استخدم البيانات التجريبية.'); return; }
@@ -97,14 +214,15 @@ function generateProposal(){
   const html = `<div class="cover"><img src="/logo-nahr.svg" alt="نهر"><h1>عرض فني ومالي مبدئي</h1><p>${escapeHtml($('programName').value)}</p><div class="meta"><div><b>الجهة</b><br>${escapeHtml(company)}</div><div><b>القطاع</b><br>${escapeHtml(sector)}</div><div><b>عدد الردود المحللة</b><br>${escapeHtml(a.people)}</div><div><b>المدة المقترحة</b><br>${escapeHtml($('timeline').value)}</div></div></div>
 <h2>١. الملخص التنفيذي</h2><p>بناءً على تحليل ${escapeHtml(a.people)} رد من نموذج جاهزية الذكاء الاصطناعي والأتمتة، نقترح برنامجًا عمليًا يساعد ${escapeHtml(company)} على بناء جاهزية مؤسسية، وليس تدريبًا مبنيًا على حالة فردية. الأولوية الأكثر تكرارًا في الردود هي: <b>${escapeHtml(topPriority)}</b>.</p>
 <h2>٢. النظرة العامة على الشركة</h2><table class="generated-table"><tr><th>البند</th><th>النتيجة</th></tr><tr><td>عدد الردود</td><td>${escapeHtml(a.people)}</td></tr><tr><td>الأقسام المشاركة</td><td>${a.depts.map(([d,c])=>escapeHtml(d)+' ('+c+')').join('، ') || 'غير محدد'}</td></tr><tr><td>المسميات الوظيفية</td><td>${a.titles.slice(0,8).map(([d,c])=>escapeHtml(d)+' ('+c+')').join('، ') || 'غير محدد'}</td></tr><tr><td>إجمالي الساعات الأسبوعية القابلة للتحسين</td><td>${escapeHtml(a.totalBaseline || a.totalTaskHours || 'غير محدد')}</td></tr><tr><td>أبرز العوائق</td><td>${escapeHtml(topObstacle)}</td></tr></table>
-<h2>٣. أين يذهب وقت الفريق؟</h2><table class="generated-table"><tr><th>المهمة المتكررة</th><th>القسم</th><th>صاحب الرد</th><th>الساعات/أسبوع</th></tr>${taskTable(a.taskPairs)}</table>
-<h2>٤. أكثر المخرجات اليومية</h2><ul>${topList(a.outputs,8)}</ul>
-<h2>٥. مستوى الجاهزية الحالي</h2><table class="generated-table"><tr><th>المهارة</th><th>متوسط التقييم من ٥</th></tr><tr><td>صياغة طلب واضح</td><td>${a.scores.prompt}</td></tr><tr><td>الحكم على جودة المخرج</td><td>${a.scores.quality}</td></tr><tr><td>استخدام الأدوات على ملفات وبيانات العمل</td><td>${a.scores.data}</td></tr><tr><td>بناء خطوة أتمتة</td><td>${a.scores.automation}</td></tr><tr><td>الاستعداد للتطبيق</td><td>${a.scores.readiness}</td></tr></table>
-<h2>٦. الأدوات والعوائق المتكررة</h2><div class="two-col"><div><h3>الأدوات المجربة</h3><ul>${topList(a.tools,8)}</ul></div><div><h3>العوائق</h3><ul>${topList(a.obstacles,8)}</ul></div></div>
-<h2>٧. مخرجات البرنامج المقترحة</h2><ul><li>برنامج تدريبي مبني على احتياج الشركة كاملًا، مع أمثلة من أكثر الأقسام تكرارًا.</li><li>تمارين تطبيقية مبنية على مهام مثل: ${a.automationWishes.slice(0,4).map(escapeHtml).join('، ') || 'تحدد بعد اجتماع الفهم'}.</li><li>قوالب عمل تساعد الفريق على إنتاج ${a.outputs.slice(0,3).map(([k])=>escapeHtml(k)).join('، ') || 'المخرجات اليومية'} بجودة أعلى.</li><li>قياس أثر بعد ٩٠ يومًا بناءً على خط الأساس في الردود.</li></ul>
-<h2>٨. نطاق العمل المقترح</h2><h3>مسار التدريب والتطبيق</h3><p>ورش عملية مبنية على أنماط الردود، وليست تدريبًا عامًا لشخص واحد.</p><h3>مسار القوالب والأتمتة</h3><p>تصميم نماذج تشغيل وقوالب لأكثر المهام المتكررة داخل الشركة.</p>
-<h2>٩. خطة التنفيذ</h2><ol><li>تحليل كل ردود النموذج وتجميعها حسب الأقسام والأولويات.</li><li>اجتماع فهم مع أصحاب القرار لتأكيد النطاق والفئات.</li><li>تصميم تدريب وتمارين حسب أهم ٣–٥ مهام متكررة.</li><li>تنفيذ التدريب وتطبيق القوالب.</li><li>قياس الأثر بعد ٩٠ يومًا.</li></ol>
-<h2>١٠. العرض المالي</h2><p>${escapeHtml($('pricing').value)}</p><h2>١١. الخطوة التالية</h2><p>اعتماد نطاق العمل وعدد المشاركين، ثم إرسال النسخة النهائية من العرض الفني والمالي.</p>`;
+${diagnosticCards(a.diagnostics)}
+<h2>٤. أين يذهب وقت الفريق؟</h2><table class="generated-table"><tr><th>المهمة المتكررة</th><th>القسم</th><th>صاحب الرد</th><th>الساعات/أسبوع</th></tr>${taskTable(a.taskPairs)}</table>
+<h2>٥. أكثر المخرجات اليومية</h2><ul>${topList(a.outputs,8)}</ul>
+<h2>٦. مستوى الجاهزية الحالي</h2><table class="generated-table"><tr><th>المهارة</th><th>متوسط التقييم من ٥</th></tr><tr><td>صياغة طلب واضح</td><td>${a.scores.prompt}</td></tr><tr><td>الحكم على جودة المخرج</td><td>${a.scores.quality}</td></tr><tr><td>استخدام الأدوات على ملفات وبيانات العمل</td><td>${a.scores.data}</td></tr><tr><td>بناء خطوة أتمتة</td><td>${a.scores.automation}</td></tr><tr><td>الاستعداد للتطبيق</td><td>${a.scores.readiness}</td></tr></table>
+<h2>٧. الأدوات والعوائق المتكررة</h2><div class="two-col"><div><h3>الأدوات المجربة</h3><ul>${topList(a.tools,8)}</ul></div><div><h3>العوائق</h3><ul>${topList(a.obstacles,8)}</ul></div></div>
+<h2>٨. مخرجات البرنامج المقترحة</h2><ul><li>برنامج تدريبي مبني على احتياج الشركة كاملًا، مع أمثلة من أكثر الأقسام تكرارًا.</li><li>تمارين تطبيقية مبنية على مهام مثل: ${a.automationWishes.slice(0,4).map(escapeHtml).join('، ') || 'تحدد بعد اجتماع الفهم'}.</li><li>قوالب عمل تساعد الفريق على إنتاج ${a.outputs.slice(0,3).map(([k])=>escapeHtml(k)).join('، ') || 'المخرجات اليومية'} بجودة أعلى.</li><li>قياس أثر بعد ٩٠ يومًا بناءً على خط الأساس في الردود.</li></ul>
+<h2>٩. نطاق العمل المقترح</h2><h3>مسار التدريب والتطبيق</h3><p>ورش عملية مبنية على أنماط الردود، وليست تدريبًا عامًا لشخص واحد.</p><h3>مسار القوالب والأتمتة</h3><p>تصميم نماذج تشغيل وقوالب لأكثر المهام المتكررة داخل الشركة.</p>
+<h2>١٠. خطة التنفيذ</h2><ol><li>تحليل كل ردود النموذج وتجميعها حسب الأقسام والأولويات.</li><li>اجتماع فهم مع أصحاب القرار لتأكيد النطاق والفئات.</li><li>تصميم تدريب وتمارين حسب أهم ٣–٥ مهام متكررة.</li><li>تنفيذ التدريب وتطبيق القوالب.</li><li>قياس الأثر بعد ٩٠ يومًا.</li></ol>
+<h2>١١. العرض المالي</h2><p>${escapeHtml($('pricing').value)}</p><h2>١٢. الخطوة التالية</h2><p>اعتماد نطاق العمل وعدد المشاركين، ثم إرسال النسخة النهائية من العرض الفني والمالي.</p>`;
   $('proposal').innerHTML=html;
 }
 function htmlToMd(node){ return node.innerText.replace(/\n{3,}/g,'\n\n'); }
