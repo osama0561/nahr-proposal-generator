@@ -23,7 +23,7 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByRole('heading', { name: '٣. التكلفة المالية للهدر' })).toBeVisible();
   await expect(page.getByText('متوسط راتب الموظف الشهري وعدد ساعات عمل الموظف في الشهر')).toBeVisible();
   await expect(page.getByText('متوسط الراتب الشهري ÷ ساعات عمل الموظف في الشهر')).toBeVisible();
-  await expect(page.getByText('٦٣ ريال')).toBeVisible();
+  await expect(page.getByRole('cell', { name: '٦٣ ريال', exact: true })).toBeVisible();
   await expect(page.getByText('الخسارة التاريخية حسب سنوات الخبرة المدخلة')).toBeVisible();
   await expect(page.getByText('الهدر الشهري', { exact: true })).toBeVisible();
   await expect(page.getByText('تجهيز تقرير التدريب الأسبوعي').first()).toBeVisible();
