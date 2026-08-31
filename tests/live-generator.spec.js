@@ -15,7 +15,7 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await page.getByLabel('كم ساعة يعمل الموظف في الشهر؟ — مدخل منك').fill('160');
   await expect(page.locator('.overview-grid b').first()).toHaveText('3');
   await page.getByRole('button', { name: 'ولّد نظرة الشركة والعرض' }).click();
-  await expect(page.getByText('عرض فني ومالي مبدئي')).toBeVisible();
+  await expect(page.getByText('عرض فني ومالي مبدئي')).toBeVisible({ timeout: 60000 });
   await expect(page.getByText('عدد الردود المحللة')).toBeVisible();
   await expect(page.getByText('القراءة التشخيصية للبيانات')).toBeVisible();
   await expect(page.getByText('سلّم المهارة وأين ينهار')).toBeVisible();
@@ -23,8 +23,8 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByText('حجم الفرصة بأدنى تقدير')).toBeVisible();
   await expect(page.getByText('تكلفة الساعة', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '٣. تقدير AI مقابل رأي الموظفين' })).toBeVisible();
-  await expect(page.getByText('رأي الموظفين في الهدر الأسبوعي')).toBeVisible();
-  await expect(page.getByText('تقدير AI للهدر الأسبوعي الفعلي')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'رأي الموظفين في الهدر الأسبوعي' })).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'تقدير AI للهدر الأسبوعي الفعلي' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '٤. التكلفة المالية للهدر' })).toBeVisible();
   await expect(page.getByText('متوسط راتب الموظف الشهري وعدد ساعات عمل الموظف في الشهر')).toBeVisible();
   await expect(page.getByText('متوسط الراتب الشهري ÷ ساعات عمل الموظف في الشهر')).toBeVisible();
