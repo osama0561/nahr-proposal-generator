@@ -9,8 +9,8 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await page.getByLabel('الشركة أو الجهة').fill('شركة الاختبار');
   await page.getByRole('button', { name: 'ولّد مسودة العرض' }).click();
   await expect(page.getByText('عرض فني ومالي مبدئي')).toBeVisible();
-  await expect(page.getByText('شركة الاختبار')).toBeVisible();
-  await expect(page.getByText('تجهيز تقرير التدريب الأسبوعي')).toBeVisible();
+  await expect(page.getByText('شركة الاختبار').first()).toBeVisible();
+  await expect(page.getByText('تجهيز تقرير التدريب الأسبوعي').first()).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(overflow).toBe(false);
 });
