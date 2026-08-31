@@ -19,10 +19,10 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByText('سلّم المهارة وأين ينهار')).toBeVisible();
   await expect(page.getByText('الطلب معكوس عن الحاجة')).toBeVisible();
   await expect(page.getByText('حجم الفرصة بأدنى تقدير')).toBeVisible();
-  await expect(page.getByText('تكلفة الساعة')).toBeVisible();
-  await expect(page.getByText('التكلفة المالية للهدر')).toBeVisible();
+  await expect(page.getByText('تكلفة الساعة', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '٣. التكلفة المالية للهدر' })).toBeVisible();
   await expect(page.getByText('الخسارة التاريخية حسب سنوات الخبرة المدخلة')).toBeVisible();
-  await expect(page.getByText('الهدر الشهري')).toBeVisible();
+  await expect(page.getByText('الهدر الشهري', { exact: true })).toBeVisible();
   await expect(page.getByText('تجهيز تقرير التدريب الأسبوعي').first()).toBeVisible();
   await expect(page.getByText('تحويل ملاحظات المكالمة').first()).toBeVisible();
   await expect(page.getByText('تصنيف الشكاوى').first()).toBeVisible();
