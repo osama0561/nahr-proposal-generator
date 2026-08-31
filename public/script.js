@@ -143,13 +143,14 @@ function historicalLossTable(rows){
 }
 
 function dedupeRows(rows){
-  const seen = new Map(), unique = [], duplicates = [];
+  const seen = new Set(), unique = [], duplicates = [];
   for (const row of rows) {
     const name = normalize(pick(row,['الاسم'])).toLowerCase();
-    const email = normalize(pick(row,['Email','البريد','الإيميل'])).toLowerCase();
-    const key = email || `${name}|${normalize(pick(row,['القسم'])).toLowerCase()}`;
-    if (key && seen.has(key)) duplicates.push({ key, name: pick(row,['الاسم']) || key });
-    else { if (key) seen.set(key,true); unique.push(row); }
+    const dept = normalize(pick(row,['القسم'])).toLowerCase();
+    const email = normalize(pick(row,['Email','Email Address','البريد','الإيميل'])).toLowerCase();
+    const keys = [email && `email:${email}`, (name || dept) && `person:${name}|${dept}`].filter(Boolean);
+    if (keys.some(k => seen.has(k))) duplicates.push({ key: keys[0] || '', name: pick(row,['الاسم']) || keys[0] || '' });
+    else { keys.forEach(k => seen.add(k)); unique.push(row); }
   }
   return { unique, duplicates };
 }
