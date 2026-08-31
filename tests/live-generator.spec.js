@@ -8,7 +8,7 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByRole('link', { name: 'معاينة القالب' })).toBeVisible();
   await expect(page.getByText('معاينة رد فردي')).toHaveCount(0);
   await expect(page.locator('#pricing')).toHaveCount(0);
-  await expect(page.getByText('التسعير يُحسب تلقائيًا')).toBeVisible();
+  await expect(page.getByText('التسعير يُحسب تلقائيًا').first()).toBeVisible();
   await page.getByRole('button', { name: 'استخدم بيانات تجريبية' }).click();
   await page.getByLabel('الشركة أو الجهة').fill('شركة الاختبار');
   await page.getByLabel('متوسط راتب الموظف شهريًا — مدخل منك').fill('10000');
@@ -28,9 +28,9 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByRole('cell', { name: '٦٣ ريال', exact: true })).toBeVisible();
   await expect(page.getByText('الخسارة التاريخية حسب سنوات الخبرة المدخلة')).toBeVisible();
   await expect(page.getByText('الهدر الشهري', { exact: true })).toBeVisible();
-  await expect(page.getByText('قاعدة التسعير')).toBeVisible();
-  await expect(page.getByText('سعر التدريب المقترح')).toBeVisible();
-  await expect(page.getByText('١٠٪ من الهدر الشهري لأن الهدر الشهري أقل من مليون ريال')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'قاعدة التسعير' }).first()).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'سعر التدريب المقترح' }).first()).toBeVisible();
+  await expect(page.getByRole('cell', { name: '١٠٪ من الهدر الشهري لأن الهدر الشهري أقل من مليون ريال' }).first()).toBeVisible();
   await expect(page.getByText('تجهيز تقرير التدريب الأسبوعي').first()).toBeVisible();
   await expect(page.getByText('تحويل ملاحظات المكالمة').first()).toBeVisible();
   await expect(page.getByText('تصنيف الشكاوى').first()).toBeVisible();
