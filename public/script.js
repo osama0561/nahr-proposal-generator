@@ -77,7 +77,7 @@ async function requestAiWasteEstimate(rows){
   try {
     setStatus('جاري تقدير الساعات فعليًا بالذكاء الاصطناعي...');
     const controller = new AbortController();
-    const timeout = setTimeout(()=>controller.abort(), 45000);
+    const timeout = setTimeout(()=>controller.abort(), 80000);
     const res = await fetch('/api/estimate-waste', {
       method:'POST',
       headers:{'content-type':'application/json'},
