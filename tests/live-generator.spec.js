@@ -8,11 +8,10 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByRole('link', { name: 'معاينة القالب' })).toBeVisible();
   await page.getByRole('button', { name: 'استخدم بيانات تجريبية' }).click();
   await page.getByLabel('الشركة أو الجهة').fill('شركة الاختبار');
-  await expect(page.getByText('3').first()).toBeVisible();
+  await expect(page.locator('.overview-grid b').first()).toHaveText('3');
   await page.getByRole('button', { name: 'ولّد نظرة الشركة والعرض' }).click();
   await expect(page.getByText('عرض فني ومالي مبدئي')).toBeVisible();
   await expect(page.getByText('عدد الردود المحللة')).toBeVisible();
-  await expect(page.getByText('3').first()).toBeVisible();
   await expect(page.getByText('تجهيز تقرير التدريب الأسبوعي').first()).toBeVisible();
   await expect(page.getByText('تحويل ملاحظات المكالمة').first()).toBeVisible();
   await expect(page.getByText('تصنيف الشكاوى').first()).toBeVisible();
