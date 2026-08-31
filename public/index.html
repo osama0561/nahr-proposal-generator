@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>مولد عروض نهر</title>
+  <link rel="icon" href="/logo-nahr.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/"><img src="/logo-nahr.svg" alt="نهر"><span>مولد العروض الفنية والمالية</span></a>
+    <span class="internal">أداة داخلية</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Google Forms → Proposal Draft</p>
+        <h1>حوّل إجابات نموذج جاهزية الذكاء الاصطناعي إلى مسودة عرض فني ومالي.</h1>
+        <p>الصق رابط Google Sheet أو استخدم بيانات تجريبية. الأداة تقرأ الأسئلة والإجابات، تختار الشخص/الشركة، ثم تولّد عرضًا قابلًا للتعديل قبل الإرسال.</p>
+      </div>
+      <div class="warning">
+        <strong>مهم</strong>
+        <p>هذه الأداة لا ترسل أي عرض للعميل. تولّد مسودة فقط. الأسعار والشروط التجارية تظل يدوية حتى تعتمدون منطق التسعير.</p>
+      </div>
+    </section>
+
+    <section class="panel controls" aria-labelledby="source-title">
+      <h2 id="source-title">١. مصدر الإجابات</h2>
+      <label>رابط Google Sheet
+        <input id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+      </label>
+      <div class="actions">
+        <button id="loadSample" class="secondary">استخدم بيانات تجريبية</button>
+        <button id="loadSheet" class="primary">اقرأ الشيت</button>
+      </div>
+      <p class="note">إذا كان الشيت خاصًا، لازم يكون قابلًا للتصدير كـ CSV أو مشتركًا مع الحساب المستخدم لاحقًا.</p>
+      <output id="loadStatus" aria-live="polite"></output>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel row-picker" aria-labelledby="rows-title">
+        <h2 id="rows-title">٢. اختر الرد</h2>
+        <label>الشركة أو الجهة
+          <input id="companyName" placeholder="اسم الجهة في العرض، مثال: شركة المثال">
+        </label>
+        <label>القطاع
+          <select id="companySector"><option>القطاع الحكومي</option><option>القطاع الخاص</option><option>القطاع غير الربحي</option></select>
+        </label>
+        <label>اختر صف الإجابة
+          <select id="rowSelect"></select>
+        </label>
+        <div id="answerPreview" class="answer-preview"></div>
+      </aside>
+
+      <section class="panel generator" aria-labelledby="generator-title">
+        <h2 id="generator-title">٣. إعداد العرض</h2>
+        <div class="form-grid">
+          <label>اسم البرنامج<input id="programName" value="برنامج جاهزية الذكاء الاصطناعي والأتمتة"></label>
+          <label>مدة مقترحة<input id="timeline" value="٤ إلى ٦ أسابيع بعد اجتماع الفهم"></label>
+          <label>التسعير<input id="pricing" value="يحدد بعد اعتماد النطاق وعدد المشاركين"></label>
+          <label>صلاحية العرض<input id="validity" value="١٤ يومًا من تاريخ الإرسال"></label>
+        </div>
+        <button id="generate" class="primary wide">ولّد مسودة العرض</button>
+      </section>
+    </section>
+
+    <section class="panel proposal-shell" aria-labelledby="proposal-title">
+      <div class="proposal-toolbar">
+        <h2 id="proposal-title">المسودة الناتجة</h2>
+        <div class="actions">
+          <button id="copyProposal" class="secondary">نسخ النص</button>
+          <button id="downloadMd" class="secondary">تحميل Markdown</button>
+          <button id="downloadHtml" class="secondary">تحميل HTML</button>
+          <button id="printPdf" class="primary">طباعة / PDF</button>
+        </div>
+      </div>
+      <article id="proposal" class="proposal" contenteditable="true" aria-label="مسودة العرض القابلة للتعديل">
+        <p class="empty">حمّل بيانات تجريبية أو شيت ثم اضغط “ولّد مسودة العرض”.</p>
+      </article>
+    </section>
+  </main>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>
