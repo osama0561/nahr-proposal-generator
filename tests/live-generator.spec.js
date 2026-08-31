@@ -6,6 +6,7 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page).toHaveTitle(/مولد عروض نهر/);
   await expect(page.getByRole('link', { name: 'قالب PowerPoint' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'معاينة القالب' })).toBeVisible();
+  await expect(page.getByText('معاينة رد فردي')).toHaveCount(0);
   await page.getByRole('button', { name: 'استخدم بيانات تجريبية' }).click();
   await page.getByLabel('الشركة أو الجهة').fill('شركة الاختبار');
   await expect(page.locator('.overview-grid b').first()).toHaveText('3');

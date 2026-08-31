@@ -29,16 +29,7 @@ function topList(pairs, max=6){ return pairs.slice(0,max).map(([k,v])=>`<li>${es
 function avg(nums){ const arr=nums.filter(n=>Number.isFinite(n)&&n>0); return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : 'غير محدد'; }
 function setStatus(msg){ $('loadStatus').textContent = msg; }
 function renderRows(){
-  const sel=$('rowSelect'); sel.innerHTML='';
-  state.rows.forEach((row,i)=>{
-    const name = pick(row,['الاسم']) || `رد ${i+1}`;
-    const dept = pick(row,['القسم']);
-    const option=document.createElement('option');
-    option.value=String(i); option.textContent=`${i+1}. ${name}${dept?' — '+dept:''}`;
-    sel.appendChild(option);
-  });
   renderOverview();
-  renderPreview();
 }
 function buildAggregate(){
   const rows = state.rows || [];
@@ -73,17 +64,7 @@ function renderOverview(){
     <div><b>${a.depts.length}</b><span>الأقسام</span></div>
     <div><b>${a.totalBaseline || a.totalTaskHours}</b><span>ساعات أسبوعية متكررة</span></div>
   </div>
-  <p class="overview-note">العرض سيُبنى على كل الردود. الاختيار أدناه للمعاينة فقط.</p>`;
-}
-function renderPreview(){
-  const row = state.rows[Number($('rowSelect').value || 0)] || [];
-  const box=$('answerPreview'); box.innerHTML='';
-  state.headers.forEach((h,i)=>{
-    if(!row[i]) return;
-    const d=document.createElement('div'); d.className='answer-item';
-    d.innerHTML=`<b>${escapeHtml(h)}</b><span>${escapeHtml(row[i])}</span>`;
-    box.appendChild(d);
-  });
+  <p class="overview-note">العرض سيُبنى على كل الردود كمراجعة شركة كاملة. لا يتم استخدام رد فردي.</p>`;
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 async function loadSheet(){
@@ -130,7 +111,6 @@ function htmlToMd(node){ return node.innerText.replace(/\n{3,}/g,'\n\n'); }
 function download(name, type, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
 $('loadSample').addEventListener('click',()=>{ state={headers:sampleHeaders, rows:sampleRows}; renderRows(); setStatus('تم تحميل بيانات تجريبية متعددة الردود. غيّر اسم الجهة ثم ولّد نظرة الشركة.'); });
 $('loadSheet').addEventListener('click',loadSheet);
-$('rowSelect').addEventListener('change',renderPreview);
 $('generate').addEventListener('click',generateProposal);
 $('copyProposal').addEventListener('click',async()=>{ await navigator.clipboard.writeText(htmlToMd($('proposal'))); });
 $('downloadMd').addEventListener('click',()=>download('nahr-company-overview-proposal.md','text/markdown;charset=utf-8',htmlToMd($('proposal'))));

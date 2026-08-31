@@ -20,7 +20,7 @@
       <div>
         <p class="eyebrow">Google Forms → Proposal Draft</p>
         <h1>حوّل إجابات نموذج جاهزية الذكاء الاصطناعي إلى مسودة عرض فني ومالي.</h1>
-        <p>الصق رابط Google Sheet أو استخدم بيانات تجريبية. الأداة تقرأ كل الردود وتطلع نظرة شاملة على الشركة، وليس عرضًا مبنيًا على شخص واحد فقط.</p>
+        <p>الصق رابط Google Sheet أو استخدم بيانات تجريبية. الأداة تقرأ كل الردود وتطلع مراجعة كاملة للشركة، بدون اختيار أو عرض ردود فردية.</p>
       </div>
       <div class="warning">
         <strong>مهم</strong>
@@ -47,18 +47,14 @@
 
     <section class="workspace">
       <aside class="panel row-picker" aria-labelledby="rows-title">
-        <h2 id="rows-title">٢. نظرة على الردود</h2>
+        <h2 id="rows-title">٢. نظرة الشركة كاملة</h2>
         <label>الشركة أو الجهة
           <input id="companyName" placeholder="اسم الجهة في العرض، مثال: شركة المثال">
         </label>
         <label>القطاع
           <select id="companySector"><option>القطاع الحكومي</option><option>القطاع الخاص</option><option>القطاع غير الربحي</option></select>
         </label>
-        <label>معاينة رد فردي
-          <select id="rowSelect"></select>
-        </label>
         <div id="companyOverview" class="company-overview"></div>
-        <div id="answerPreview" class="answer-preview"></div>
       </aside>
 
       <section class="panel generator" aria-labelledby="generator-title">
