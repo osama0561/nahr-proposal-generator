@@ -6,7 +6,7 @@ const sampleRows = [
   ['2026-08-31','fahad@example.com','فهد سالم','المبيعات','مشرف مبيعات','٨ سنوات','كتابة متابعة العملاء','4','تجهيز عروض الأسعار','3','تلخيص مكالمات العملاء','2','رسائل عملاء، عروض، تقارير مبيعات','أستخدمها أسبوعيًا','ChatGPT, Copilot','أستخدمها في المسودات والتلخيص','4','3','2','2','عدم معرفة أفضل طريقة للطلب، الخوف من مشاركة بيانات حساسة','تسريع كتابة العروض والمتابعات','تحويل ملاحظات المكالمة إلى رسالة متابعة وعرض مختصر','9','5'],
   ['2026-08-31','sara@example.com','سارة علي','خدمة العملاء','قائدة فريق','٥ سنوات','تصنيف شكاوى العملاء','6','كتابة ردود متكررة','4','تقرير نهاية اليوم','2','ردود، تقارير، تصنيفات','لم أستخدمها إلا قليلًا','Gemini','تجربة أسئلة بسيطة','2','2','1','1','لا أعرف من أين أبدأ، لا توجد قوالب، ضعف الثقة في المخرجات','استخدام AI بأمان في خدمة العملاء','تصنيف الشكاوى واقتراح الرد المناسب تلقائيًا','12','4']
 ];
-let state = { headers: sampleHeaders, rows: sampleRows };
+let state = { headers: sampleHeaders, rows: sampleRows, aiWaste: null };
 const $ = (id) => document.getElementById(id);
 const arabicDigits = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
 function normalize(s){ return String(s||'').replace(/[\u064B-\u065F]/g,'').trim(); }
@@ -56,9 +56,46 @@ function rowWasteHours(row){
   const taskHours = repeatedTasks(row).reduce((s,[,h])=>s+parseHours(h),0);
   return baseline || taskHours;
 }
-function buildEconomicImpact(rows, taskPairs, totalBaseline, totalTaskHours){
+function compactResponsesForAi(rows){
+  return rows.map(r=>({
+    name: personName(r),
+    dept: pick(r,['القسم']),
+    title: pick(r,['المسمى الوظيفي']),
+    years: pick(r,['سنوات خبرتك','سنوات الخبرة']),
+    tasks: repeatedTasks(r).map(([task,h])=>`${task} (${h})`).join(' | '),
+    taskHours: repeatedTasks(r).reduce((sum,[,h])=>sum+parseHours(h),0),
+    baselineOpinion: pick(r,['مجموع الساعات الأسبوعية']),
+    output: pick(r,['ما أكثر ما تنتجه']),
+    aiUse: pick(r,['استخدامك لأدوات الذكاء الاصطناعي']),
+    reached: pick(r,['أبعد ما وصلت إليه']),
+    dataScore: skillValue(r,['ملفات وبيانات عملي','استخدام الأداة على ملفات']),
+    automationScore: skillValue(r,['بناء خطوة أتمتة']),
+    obstacles: pick(r,['اختر كل ما ينطبق عليك']),
+    priority: pick(r,['أولويتك الأولى من التدريب']),
+    automationWish: pick(r,['لو اختفت مهمة واحدة'])
+  }));
+}
+async function requestAiWasteEstimate(rows){
+  try {
+    setStatus('جاري تقدير الساعات فعليًا بالذكاء الاصطناعي...');
+    const res = await fetch('/api/estimate-waste', {
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body: JSON.stringify({ responses: compactResponsesForAi(rows) })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'AI estimate failed');
+    return data;
+  } catch (e) {
+    console.warn('AI waste estimate failed', e);
+    return null;
+  }
+}
+function buildEconomicImpact(rows, taskPairs, totalBaseline, totalTaskHours, aiWaste){
   const fin = getFinancialInputs();
-  const weeklyWaste = totalBaseline || totalTaskHours || 0;
+  const employeeOpinionWeeklyWaste = totalBaseline || totalTaskHours || 0;
+  const aiEstimatedWeeklyWaste = Number(aiWaste?.totalAiEstimatedWeeklyHours || 0);
+  const weeklyWaste = aiEstimatedWeeklyWaste || employeeOpinionWeeklyWaste;
   const monthlyWasteHours = weeklyWaste * 4.33;
   const yearlyWasteHours = weeklyWaste * 52;
   const monthlyCost = fin.hourlyCost ? monthlyWasteHours * fin.hourlyCost : 0;
@@ -73,17 +110,19 @@ function buildEconomicImpact(rows, taskPairs, totalBaseline, totalTaskHours){
   const trainingRate = monthlyCost >= 1000000 ? 0.05 : 0.10;
   const trainingPrice = monthlyCost * trainingRate;
   const pricingRule = monthlyCost >= 1000000 ? '٥٪ من الهدر الشهري لأن الهدر الشهري مليون ريال أو أكثر' : '١٠٪ من الهدر الشهري لأن الهدر الشهري أقل من مليون ريال';
-  return { ...fin, weeklyWaste, monthlyWasteHours, yearlyWasteHours, monthlyCost, yearlyCost, historicalRows, historicalHours, historicalCost, trainingRate, trainingPrice, pricingRule };
+  return { ...fin, weeklyWaste, employeeOpinionWeeklyWaste, aiEstimatedWeeklyWaste, aiWaste, monthlyWasteHours, yearlyWasteHours, monthlyCost, yearlyCost, historicalRows, historicalHours, historicalCost, trainingRate, trainingPrice, pricingRule };
 }
 function economicCharts(e,d,a){
   const maxSkillLow = Math.max(...d.skillBreakdown.map(x=>x.lowPct), 100);
   const skillBars = d.skillBreakdown.map(x=>percentBar(x.label, x.lowPct, maxSkillLow, '%')).join('');
   const maxClusters = Math.max(...d.clusters.map(([,v])=>v), 1);
   const clusterBars = d.clusters.slice(0,6).map(([k,v])=>percentBar(k, v, maxClusters)).join('') || '<p>لا توجد عمليات مصنفة بعد.</p>';
-  const monthlyVsYearly = percentBar('شهريًا', Math.round(e.monthlyCost), Math.max(e.yearlyCost,1), ' ريال') + percentBar('سنويًا', Math.round(e.yearlyCost), Math.max(e.yearlyCost,1), ' ريال');
+  const monthlyVsYearly = percentBar('رأي الموظفين أسبوعيًا', Math.round(e.employeeOpinionWeeklyWaste), Math.max(e.aiEstimatedWeeklyWaste || e.employeeOpinionWeeklyWaste,1), ' ساعة') + percentBar('تقدير AI أسبوعيًا', Math.round(e.aiEstimatedWeeklyWaste || e.employeeOpinionWeeklyWaste), Math.max(e.aiEstimatedWeeklyWaste || e.employeeOpinionWeeklyWaste,1), ' ساعة') + percentBar('شهريًا', Math.round(e.monthlyCost), Math.max(e.yearlyCost,1), ' ريال') + percentBar('سنويًا', Math.round(e.yearlyCost), Math.max(e.yearlyCost,1), ' ريال');
   return `<section class="bi-section" aria-label="Power BI style visuals">
     <div class="bi-kpis">
       ${kpiCard('تكلفة الساعة', money(e.hourlyCost), `متوسط الراتب ÷ ساعات عمل الموظف شهريًا: ${formatNum(e.salary)} ÷ ${formatNum(e.monthlyHours)}`)}
+      ${kpiCard('تقدير الموظفين', `${formatNum(e.employeeOpinionWeeklyWaste)} ساعة/أسبوع`, 'من إجابة خط الأساس في الشيت')}
+      ${kpiCard('تقدير AI الفعلي', `${formatNum(e.aiEstimatedWeeklyWaste || e.employeeOpinionWeeklyWaste)} ساعة/أسبوع`, e.aiWaste ? (e.aiWaste.method || 'تحليل AI من وصف المهام') : 'يستخدم رقم الموظفين إذا لم يعمل AI')}
       ${kpiCard('الهدر الشهري', money(e.monthlyCost), `${formatNum(e.monthlyWasteHours)} ساعة شهريًا`)}
       ${kpiCard('الهدر السنوي', money(e.yearlyCost), `${formatNum(e.yearlyWasteHours)} ساعة سنويًا`)}
       ${kpiCard('سعر التدريب', money(e.trainingPrice), e.pricingRule)}
@@ -197,7 +236,7 @@ function diagnosticCards(d){
   const championText = topNames(d.champions,8);
   const riskText = topNames(d.risks.map(r=>`${r.name} (${r.readiness}/5)`),10);
   const highRiskText = topNames(d.highSkillLowReadiness.map(r=>`${r.name} (${r.readiness}/5)`),8);
-  return `<h2>٤. القراءة التشخيصية للبيانات</h2>
+  return `<h2>٥. القراءة التشخيصية للبيانات</h2>
 <h3>١. سلّم المهارة وأين ينهار</h3><table class="generated-table"><tr><th>البعد</th><th>المتوسط</th><th>نسبة ٢ فأقل</th></tr>${collapse}</table><p>${escapeHtml(d.dailyWeeklyCount)} من العينة يستخدمون أدوات الذكاء الاصطناعي يوميًا أو أسبوعيًا، لكن ${escapeHtml(d.textOnlyCount)} لم يتجاوزوا الكتابة/الصياغة، و${escapeHtml(d.integrationCount)} فقط ظهرت لديهم أدوات ربط أو أتمتة. هذه فجوة بين الاستخدام والعائد التشغيلي.</p>
 <h3>٢. الفريق لا يرى الفرصة كاملة</h3><ul>${blind}</ul><p>إذا ظهرت هذه الفجوة، يبدأ البرنامج بجلسة “رؤية الفرصة” قبل التدريب على الأدوات.</p>
 <h3>٣. جودة قياس الوقت</h3><ul>${anomalies}</ul><p>وجود أرقام عالية أو غير متسقة يعني أن خط الأساس نفسه يحتاج ضبط قبل وعد ROI نهائي.</p>
@@ -237,7 +276,7 @@ function buildAggregate(){
     automation: avg(rows.map(r=>toNum(pick(r,['بناء خطوة أتمتة'])))),
     readiness: avg(rows.map(r=>toNum(pick(r,['استعدادك لتطبيق']))))
   };
-  const economics = buildEconomicImpact(rows, taskPairs, totalBaseline, totalTaskHours);
+  const economics = buildEconomicImpact(rows, taskPairs, totalBaseline, totalTaskHours, state.aiWaste);
   const diagnostics = buildDeepDiagnostics({ rows, people, depts, titles, outputs, aiUse, tools, obstacles, priorities, automationWishes, taskPairs, totalTaskHours, totalBaseline, scores });
   return { rows, people, duplicateCount, depts, titles, outputs, aiUse, tools, obstacles, priorities, automationWishes, taskPairs, totalTaskHours, totalBaseline, scores, diagnostics, economics };
 }
@@ -261,7 +300,7 @@ async function loadSheet(){
   const res=await fetch('/api/read-sheet?url='+encodeURIComponent(url));
   const data=await res.json();
   if(!res.ok){ setStatus(data.error || 'تعذر قراءة الشيت.'); return; }
-  state={headers:data.headers, rows:data.rows};
+  state={headers:data.headers, rows:data.rows, aiWaste:null};
   renderRows(); setStatus(`تمت قراءة ${data.rows.length} رد. سيتم توليد نظرة شاملة على الشركة من كل الردود.`);
 }
 function repeatedTasks(row){
@@ -275,7 +314,11 @@ function repeatedTasks(row){
 function taskTable(tasks){
   return tasks.slice(0,12).map(t=>`<tr><td>${escapeHtml(t.task)}</td><td>${escapeHtml(t.dept)}</td><td>${escapeHtml(t.owner)}</td><td>${escapeHtml(t.hours || 'غير محدد')}</td></tr>`).join('') || '<tr><td colspan="4">يتم تحديدها في اجتماع الفهم.</td></tr>';
 }
-function generateProposal(){
+async function generateProposal(){
+  state.aiWaste = null;
+  const pre = buildAggregate();
+  $('proposal').innerHTML = '<p class="empty">جاري تحليل الساعات فعليًا بالذكاء الاصطناعي...</p>';
+  state.aiWaste = await requestAiWasteEstimate(pre.rows);
   const company = $('companyName').value.trim() || 'اسم الجهة التجريبية';
   const sector = $('companySector').value;
   const a = buildAggregate();
@@ -285,21 +328,22 @@ function generateProposal(){
 <h2>١. الملخص التنفيذي</h2><p>بناءً على تحليل ${escapeHtml(a.people)} رد من نموذج جاهزية الذكاء الاصطناعي والأتمتة، نقترح برنامجًا عمليًا يساعد ${escapeHtml(company)} على بناء جاهزية مؤسسية، وليس تدريبًا مبنيًا على حالة فردية. الأولوية الأكثر تكرارًا في الردود هي: <b>${escapeHtml(topPriority)}</b>.</p>
 <h2>٢. النظرة العامة على الشركة</h2><table class="generated-table"><tr><th>البند</th><th>النتيجة</th></tr><tr><td>عدد الردود</td><td>${escapeHtml(a.people)}</td></tr><tr><td>الأقسام المشاركة</td><td>${a.depts.map(([d,c])=>escapeHtml(d)+' ('+c+')').join('، ') || 'غير محدد'}</td></tr><tr><td>المسميات الوظيفية</td><td>${a.titles.slice(0,8).map(([d,c])=>escapeHtml(d)+' ('+c+')').join('، ') || 'غير محدد'}</td></tr><tr><td>متوسط الراتب الشهري المدخل</td><td>${money(a.economics.salary)}</td></tr><tr><td>ساعات عمل الموظف في الشهر — مدخل منك</td><td>${formatNum(a.economics.monthlyHours)}</td></tr><tr><td>تكلفة الساعة التقديرية</td><td>${money(a.economics.hourlyCost)}</td></tr><tr><td>إجمالي الساعات الأسبوعية القابلة للتحسين</td><td>${escapeHtml(a.totalBaseline || a.totalTaskHours || 'غير محدد')}</td></tr><tr><td>الهدر الشهري المحسوب</td><td>${money(a.economics.monthlyCost)}</td></tr><tr><td>سعر التدريب المحسوب</td><td>${money(a.economics.trainingPrice)} (${escapeHtml(Math.round(a.economics.trainingRate*100))}٪)</td></tr><tr><td>أبرز العوائق</td><td>${escapeHtml(topObstacle)}</td></tr></table>
 ${economicCharts(a.economics,a.diagnostics,a)}
-<h2>٣. التكلفة المالية للهدر</h2><p>المدخلات التي تأتي منك هي متوسط راتب الموظف الشهري وعدد ساعات عمل الموظف في الشهر. نحسب تكلفة الساعة بقسمة الراتب على ساعات العمل الشهرية: ${money(a.economics.salary)} ÷ ${formatNum(a.economics.monthlyHours)} = ${money(a.economics.hourlyCost)} للساعة. بعدها نضرب تكلفة الساعة في مجموع الساعات المهدرة من الشيت لاستخراج التكلفة الشهرية والسنوية والتاريخية.</p><p>مجموع الساعات المهدرة من الشيت هو ${formatNum(a.economics.weeklyWaste)} ساعة أسبوعيًا، لذلك تكون التكلفة الشهرية التقريبية ${money(a.economics.monthlyCost)}، والتكلفة السنوية ${money(a.economics.yearlyCost)}. وبناءً على قاعدة التسعير المعتمدة، سعر التدريب = ${money(a.economics.trainingPrice)} (${escapeHtml(Math.round(a.economics.trainingRate*100))}٪ من الهدر الشهري).</p><table class="generated-table"><tr><th>المؤشر</th><th>القيمة</th></tr><tr><td>معادلة تكلفة الساعة</td><td>متوسط الراتب الشهري ÷ ساعات عمل الموظف في الشهر = ${money(a.economics.hourlyCost)}</td></tr><tr><td>مصدر الساعات المهدرة</td><td>مجموع الساعات المهدرة من كل ردود الشيت، بعد إزالة التكرارات</td></tr><tr><td>الساعات المهدرة شهريًا</td><td>${formatNum(a.economics.monthlyWasteHours)}</td></tr><tr><td>التكلفة الشهرية</td><td>${money(a.economics.monthlyCost)}</td></tr><tr><td>قاعدة التسعير</td><td>${escapeHtml(a.economics.pricingRule)}</td></tr><tr><td>سعر التدريب المقترح</td><td>${money(a.economics.trainingPrice)}</td></tr><tr><td>الساعات المهدرة سنويًا</td><td>${formatNum(a.economics.yearlyWasteHours)}</td></tr><tr><td>التكلفة السنوية</td><td>${money(a.economics.yearlyCost)}</td></tr><tr><td>الخسارة التاريخية حسب سنوات الخبرة المدخلة</td><td>${money(a.economics.historicalCost)} / ${formatNum(a.economics.historicalHours)} ساعة</td></tr></table><h3>تفصيل الخسارة التاريخية حسب الموظف</h3><table class="generated-table"><tr><th>الاسم</th><th>القسم</th><th>سنوات الخبرة</th><th>ساعات تاريخية</th><th>تكلفة تاريخية</th></tr>${historicalLossTable(a.economics.historicalRows)}</table>
+<h2>٣. تقدير AI مقابل رأي الموظفين</h2><p>رأي الموظفين في الهدر الأسبوعي: ${formatNum(a.economics.employeeOpinionWeeklyWaste)} ساعة. تقدير AI من وصف المهام والمخرجات وقابلية الأتمتة: ${formatNum(a.economics.aiEstimatedWeeklyWaste || a.economics.employeeOpinionWeeklyWaste)} ساعة أسبوعيًا. نستخدم تقدير AI في الحساب المالي إذا توفر لأنه يحلل طبيعة المهمة نفسها، مع إبقاء رأي الموظفين كمرجع للمقارنة.</p><ul>${(a.economics.aiWaste?.insights||[]).slice(0,4).map(x=>`<li>${escapeHtml(x)}</li>`).join('') || '<li>لم يرجع AI ملاحظات إضافية، لذلك استخدمنا حسابًا محافظًا من إجابات الشيت.</li>'}</ul>
+<h2>٤. التكلفة المالية للهدر</h2><p>المدخلات التي تأتي منك هي متوسط راتب الموظف الشهري وعدد ساعات عمل الموظف في الشهر. نحسب تكلفة الساعة بقسمة الراتب على ساعات العمل الشهرية: ${money(a.economics.salary)} ÷ ${formatNum(a.economics.monthlyHours)} = ${money(a.economics.hourlyCost)} للساعة. بعدها نضرب تكلفة الساعة في مجموع الساعات المهدرة من الشيت لاستخراج التكلفة الشهرية والسنوية والتاريخية.</p><p>مجموع الساعات المهدرة من الشيت هو ${formatNum(a.economics.weeklyWaste)} ساعة أسبوعيًا، لذلك تكون التكلفة الشهرية التقريبية ${money(a.economics.monthlyCost)}، والتكلفة السنوية ${money(a.economics.yearlyCost)}. وبناءً على قاعدة التسعير المعتمدة، سعر التدريب = ${money(a.economics.trainingPrice)} (${escapeHtml(Math.round(a.economics.trainingRate*100))}٪ من الهدر الشهري).</p><table class="generated-table"><tr><th>المؤشر</th><th>القيمة</th></tr><tr><td>معادلة تكلفة الساعة</td><td>متوسط الراتب الشهري ÷ ساعات عمل الموظف في الشهر = ${money(a.economics.hourlyCost)}</td></tr><tr><td>مصدر الساعات المهدرة</td><td>مقارنة بين رأي الموظفين وتقدير AI من وصف مهامهم. الحساب المالي يستخدم تقدير AI إذا توفر، وإلا يستخدم رأي الموظفين.</td></tr><tr><td>رأي الموظفين في الهدر الأسبوعي</td><td>${formatNum(a.economics.employeeOpinionWeeklyWaste)} ساعة</td></tr><tr><td>تقدير AI للهدر الأسبوعي الفعلي</td><td>${formatNum(a.economics.aiEstimatedWeeklyWaste || a.economics.employeeOpinionWeeklyWaste)} ساعة</td></tr><tr><td>الساعات المهدرة شهريًا</td><td>${formatNum(a.economics.monthlyWasteHours)}</td></tr><tr><td>التكلفة الشهرية</td><td>${money(a.economics.monthlyCost)}</td></tr><tr><td>قاعدة التسعير</td><td>${escapeHtml(a.economics.pricingRule)}</td></tr><tr><td>سعر التدريب المقترح</td><td>${money(a.economics.trainingPrice)}</td></tr><tr><td>الساعات المهدرة سنويًا</td><td>${formatNum(a.economics.yearlyWasteHours)}</td></tr><tr><td>التكلفة السنوية</td><td>${money(a.economics.yearlyCost)}</td></tr><tr><td>الخسارة التاريخية حسب سنوات الخبرة المدخلة</td><td>${money(a.economics.historicalCost)} / ${formatNum(a.economics.historicalHours)} ساعة</td></tr></table><h3>تفصيل الخسارة التاريخية حسب الموظف</h3><table class="generated-table"><tr><th>الاسم</th><th>القسم</th><th>سنوات الخبرة</th><th>ساعات تاريخية</th><th>تكلفة تاريخية</th></tr>${historicalLossTable(a.economics.historicalRows)}</table>
 ${diagnosticCards(a.diagnostics)}
-<h2>٥. أين يذهب وقت الفريق؟</h2><table class="generated-table"><tr><th>المهمة المتكررة</th><th>القسم</th><th>صاحب الرد</th><th>الساعات/أسبوع</th></tr>${taskTable(a.taskPairs)}</table>
-<h2>٦. أكثر المخرجات اليومية</h2><ul>${topList(a.outputs,8)}</ul>
-<h2>٧. مستوى الجاهزية الحالي</h2><table class="generated-table"><tr><th>المهارة</th><th>متوسط التقييم من ٥</th></tr><tr><td>صياغة طلب واضح</td><td>${a.scores.prompt}</td></tr><tr><td>الحكم على جودة المخرج</td><td>${a.scores.quality}</td></tr><tr><td>استخدام الأدوات على ملفات وبيانات العمل</td><td>${a.scores.data}</td></tr><tr><td>بناء خطوة أتمتة</td><td>${a.scores.automation}</td></tr><tr><td>الاستعداد للتطبيق</td><td>${a.scores.readiness}</td></tr></table>
-<h2>٨. الأدوات والعوائق المتكررة</h2><div class="two-col"><div><h3>الأدوات المجربة</h3><ul>${topList(a.tools,8)}</ul></div><div><h3>العوائق</h3><ul>${topList(a.obstacles,8)}</ul></div></div>
-<h2>٩. مخرجات البرنامج المقترحة</h2><ul><li>برنامج تدريبي مبني على احتياج الشركة كاملًا، مع أمثلة من أكثر الأقسام تكرارًا.</li><li>تمارين تطبيقية مبنية على مهام مثل: ${a.automationWishes.slice(0,4).map(escapeHtml).join('، ') || 'تحدد بعد اجتماع الفهم'}.</li><li>قوالب عمل تساعد الفريق على إنتاج ${a.outputs.slice(0,3).map(([k])=>escapeHtml(k)).join('، ') || 'المخرجات اليومية'} بجودة أعلى.</li><li>قياس أثر بعد ٩٠ يومًا بناءً على خط الأساس في الردود.</li></ul>
-<h2>١٠. نطاق العمل المقترح</h2><h3>مسار التدريب والتطبيق</h3><p>ورش عملية مبنية على أنماط الردود، وليست تدريبًا عامًا لشخص واحد.</p><h3>مسار القوالب والأتمتة</h3><p>تصميم نماذج تشغيل وقوالب لأكثر المهام المتكررة داخل الشركة.</p>
-<h2>١١. خطة التنفيذ</h2><ol><li>تحليل كل ردود النموذج وتجميعها حسب الأقسام والأولويات.</li><li>اجتماع فهم مع أصحاب القرار لتأكيد النطاق والفئات.</li><li>تصميم تدريب وتمارين حسب أهم ٣–٥ مهام متكررة.</li><li>تنفيذ التدريب وتطبيق القوالب.</li><li>قياس الأثر بعد ٩٠ يومًا.</li></ol>
-<h2>١٢. العرض المالي</h2><table class="generated-table"><tr><th>البند</th><th>القيمة</th></tr><tr><td>الهدر الشهري المحسوب</td><td>${money(a.economics.monthlyCost)}</td></tr><tr><td>قاعدة التسعير</td><td>${escapeHtml(a.economics.pricingRule)}</td></tr><tr><td>سعر التدريب المقترح</td><td>${money(a.economics.trainingPrice)}</td></tr><tr><td>ملاحظة</td><td>السعر محسوب تلقائيًا من الهدر الشهري، وليس مدخلًا يدويًا في النموذج.</td></tr></table><h2>١٣. الخطوة التالية</h2><p>اعتماد نطاق العمل وعدد المشاركين، ثم إرسال النسخة النهائية من العرض الفني والمالي.</p>`;
+<h2>٦. أين يذهب وقت الفريق؟</h2><table class="generated-table"><tr><th>المهمة المتكررة</th><th>القسم</th><th>صاحب الرد</th><th>الساعات/أسبوع</th></tr>${taskTable(a.taskPairs)}</table>
+<h2>٧. أكثر المخرجات اليومية</h2><ul>${topList(a.outputs,8)}</ul>
+<h2>٨. مستوى الجاهزية الحالي</h2><table class="generated-table"><tr><th>المهارة</th><th>متوسط التقييم من ٥</th></tr><tr><td>صياغة طلب واضح</td><td>${a.scores.prompt}</td></tr><tr><td>الحكم على جودة المخرج</td><td>${a.scores.quality}</td></tr><tr><td>استخدام الأدوات على ملفات وبيانات العمل</td><td>${a.scores.data}</td></tr><tr><td>بناء خطوة أتمتة</td><td>${a.scores.automation}</td></tr><tr><td>الاستعداد للتطبيق</td><td>${a.scores.readiness}</td></tr></table>
+<h2>٩. الأدوات والعوائق المتكررة</h2><div class="two-col"><div><h3>الأدوات المجربة</h3><ul>${topList(a.tools,8)}</ul></div><div><h3>العوائق</h3><ul>${topList(a.obstacles,8)}</ul></div></div>
+<h2>١٠. مخرجات البرنامج المقترحة</h2><ul><li>برنامج تدريبي مبني على احتياج الشركة كاملًا، مع أمثلة من أكثر الأقسام تكرارًا.</li><li>تمارين تطبيقية مبنية على مهام مثل: ${a.automationWishes.slice(0,4).map(escapeHtml).join('، ') || 'تحدد بعد اجتماع الفهم'}.</li><li>قوالب عمل تساعد الفريق على إنتاج ${a.outputs.slice(0,3).map(([k])=>escapeHtml(k)).join('، ') || 'المخرجات اليومية'} بجودة أعلى.</li><li>قياس أثر بعد ٩٠ يومًا بناءً على خط الأساس في الردود.</li></ul>
+<h2>١١. نطاق العمل المقترح</h2><h3>مسار التدريب والتطبيق</h3><p>ورش عملية مبنية على أنماط الردود، وليست تدريبًا عامًا لشخص واحد.</p><h3>مسار القوالب والأتمتة</h3><p>تصميم نماذج تشغيل وقوالب لأكثر المهام المتكررة داخل الشركة.</p>
+<h2>١٢. خطة التنفيذ</h2><ol><li>تحليل كل ردود النموذج وتجميعها حسب الأقسام والأولويات.</li><li>اجتماع فهم مع أصحاب القرار لتأكيد النطاق والفئات.</li><li>تصميم تدريب وتمارين حسب أهم ٣–٥ مهام متكررة.</li><li>تنفيذ التدريب وتطبيق القوالب.</li><li>قياس الأثر بعد ٩٠ يومًا.</li></ol>
+<h2>١٣. العرض المالي</h2><table class="generated-table"><tr><th>البند</th><th>القيمة</th></tr><tr><td>الهدر الشهري المحسوب</td><td>${money(a.economics.monthlyCost)}</td></tr><tr><td>قاعدة التسعير</td><td>${escapeHtml(a.economics.pricingRule)}</td></tr><tr><td>سعر التدريب المقترح</td><td>${money(a.economics.trainingPrice)}</td></tr><tr><td>ملاحظة</td><td>السعر محسوب تلقائيًا من الهدر الشهري، وليس مدخلًا يدويًا في النموذج.</td></tr></table><h2>١٤. الخطوة التالية</h2><p>اعتماد نطاق العمل وعدد المشاركين، ثم إرسال النسخة النهائية من العرض الفني والمالي.</p>`;
   $('proposal').innerHTML=html;
 }
 function htmlToMd(node){ return node.innerText.replace(/\n{3,}/g,'\n\n'); }
 function download(name, type, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
-$('loadSample').addEventListener('click',()=>{ state={headers:sampleHeaders, rows:sampleRows}; renderRows(); setStatus('تم تحميل بيانات تجريبية متعددة الردود. غيّر اسم الجهة ثم ولّد نظرة الشركة.'); });
+$('loadSample').addEventListener('click',()=>{ state={headers:sampleHeaders, rows:sampleRows, aiWaste:null}; renderRows(); setStatus('تم تحميل بيانات تجريبية متعددة الردود. غيّر اسم الجهة ثم ولّد نظرة الشركة.'); });
 $('loadSheet').addEventListener('click',loadSheet);
 $('generate').addEventListener('click',generateProposal);
 $('copyProposal').addEventListener('click',async()=>{ await navigator.clipboard.writeText(htmlToMd($('proposal'))); });

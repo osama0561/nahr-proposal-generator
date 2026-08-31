@@ -22,7 +22,10 @@ test('internal proposal generator creates a draft from sample data', async ({ pa
   await expect(page.getByText('الطلب معكوس عن الحاجة')).toBeVisible();
   await expect(page.getByText('حجم الفرصة بأدنى تقدير')).toBeVisible();
   await expect(page.getByText('تكلفة الساعة', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '٣. التكلفة المالية للهدر' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '٣. تقدير AI مقابل رأي الموظفين' })).toBeVisible();
+  await expect(page.getByText('رأي الموظفين في الهدر الأسبوعي')).toBeVisible();
+  await expect(page.getByText('تقدير AI للهدر الأسبوعي الفعلي')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '٤. التكلفة المالية للهدر' })).toBeVisible();
   await expect(page.getByText('متوسط راتب الموظف الشهري وعدد ساعات عمل الموظف في الشهر')).toBeVisible();
   await expect(page.getByText('متوسط الراتب الشهري ÷ ساعات عمل الموظف في الشهر')).toBeVisible();
   await expect(page.getByRole('cell', { name: '٦٣ ريال', exact: true })).toBeVisible();
