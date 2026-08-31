@@ -1,5 +1,5 @@
 const fs = require('fs');
-const required = ['مولد عروض نهر','Google Sheet','استخدم بيانات تجريبية','ولّد مسودة العرض','logo-nahr.svg'];
+const required = ['مولد عروض نهر','Google Sheet','استخدم بيانات تجريبية','ولّد مسودة العرض','logo-nahr-ai-header.png'];
 const forbidden = ['lovable','v0.dev','bolt.new','✨','🚀','⚡'];
 const html = fs.readFileSync('public/index.html','utf8');
 const js = fs.readFileSync('public/script.js','utf8');

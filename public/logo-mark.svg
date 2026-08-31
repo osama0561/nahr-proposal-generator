@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">رمز نهر</title>
+  <desc id="desc">رمز رسمي لحرف نون مع مسار رملي</desc>
+  <rect x="8" y="8" width="80" height="80" rx="25" fill="#1d1a15"/>
+  <path d="M21 62c15-10 30-7 44 0 6 3 11 3 16-1" stroke="#d8c3a3" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <text x="49" y="54" direction="rtl" text-anchor="middle" font-family="Arial, Tahoma, 'Segoe UI', sans-serif" font-size="42" font-weight="800" fill="#fffdf8">ن</text>
+  <circle cx="39" cy="30" r="4.8" fill="#fffdf8"/>
+</svg>
