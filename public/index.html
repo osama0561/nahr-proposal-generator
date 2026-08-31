@@ -6,12 +6,12 @@
   <meta name="robots" content="noindex, nofollow">
   <title>مولد عروض نهر</title>
   <link rel="icon" href="/logo-mark.svg" type="image/svg+xml">
-  <link rel="preload" href="/logo-nahr-ai-header.png" as="image">
+  <link rel="preload" href="/logo-nahr.svg" as="image">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="app-header">
-    <a class="brand" href="/"><img src="/logo-nahr-ai-header.png" alt="نهر"><span>مولد العروض الفنية والمالية</span></a>
+    <a class="brand" href="/"><img src="/logo-nahr.svg" alt="نهر"><span>مولد العروض الفنية والمالية</span></a>
     <span class="internal">أداة داخلية</span>
   </header>
 
@@ -20,7 +20,7 @@
       <div>
         <p class="eyebrow">Google Forms → Proposal Draft</p>
         <h1>حوّل إجابات نموذج جاهزية الذكاء الاصطناعي إلى مسودة عرض فني ومالي.</h1>
-        <p>الصق رابط Google Sheet أو استخدم بيانات تجريبية. الأداة تقرأ الأسئلة والإجابات، تختار الشخص/الشركة، ثم تولّد عرضًا قابلًا للتعديل قبل الإرسال.</p>
+        <p>الصق رابط Google Sheet أو استخدم بيانات تجريبية. الأداة تقرأ كل الردود وتطلع نظرة شاملة على الشركة، وليس عرضًا مبنيًا على شخص واحد فقط.</p>
       </div>
       <div class="warning">
         <strong>مهم</strong>
@@ -47,16 +47,17 @@
 
     <section class="workspace">
       <aside class="panel row-picker" aria-labelledby="rows-title">
-        <h2 id="rows-title">٢. اختر الرد</h2>
+        <h2 id="rows-title">٢. نظرة على الردود</h2>
         <label>الشركة أو الجهة
           <input id="companyName" placeholder="اسم الجهة في العرض، مثال: شركة المثال">
         </label>
         <label>القطاع
           <select id="companySector"><option>القطاع الحكومي</option><option>القطاع الخاص</option><option>القطاع غير الربحي</option></select>
         </label>
-        <label>اختر صف الإجابة
+        <label>معاينة رد فردي
           <select id="rowSelect"></select>
         </label>
+        <div id="companyOverview" class="company-overview"></div>
         <div id="answerPreview" class="answer-preview"></div>
       </aside>
 
@@ -68,7 +69,7 @@
           <label>التسعير<input id="pricing" value="يحدد بعد اعتماد النطاق وعدد المشاركين"></label>
           <label>صلاحية العرض<input id="validity" value="١٤ يومًا من تاريخ الإرسال"></label>
         </div>
-        <button id="generate" class="primary wide">ولّد مسودة العرض</button>
+        <button id="generate" class="primary wide">ولّد نظرة الشركة والعرض</button>
       </section>
     </section>
 
@@ -83,7 +84,7 @@
         </div>
       </div>
       <article id="proposal" class="proposal" contenteditable="true" aria-label="مسودة العرض القابلة للتعديل">
-        <p class="empty">حمّل بيانات تجريبية أو شيت ثم اضغط “ولّد مسودة العرض”.</p>
+        <p class="empty">حمّل بيانات تجريبية أو شيت ثم اضغط “ولّد نظرة الشركة والعرض”.</p>
       </article>
     </section>
   </main>
