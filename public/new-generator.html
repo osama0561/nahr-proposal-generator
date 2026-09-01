@@ -59,8 +59,17 @@
 
       <section class="panel generator" aria-labelledby="data-title">
         <h2 id="data-title">٣. البيانات المستخرجة</h2>
-        <p class="formula-note">هنا نثبت أن القراءة والتنظيف تعمل قبل بناء المولد الجديد. لاحقًا نضيف الوظائف الجديدة فوق هذه البيانات بدل ما نعدل المولد القديم مباشرة.</p>
+        <p class="formula-note">هنا نثبت أن القراءة والتنظيف تعمل قبل بناء المولد الجديد. الآن أضفنا محرك تشخيص أولي مبني على البرومبت الجديد: Data Integrity، Capability Ladder، Process Clustering، Waste Engine، Before/After، Pricing، وSuccess Measurement.</p>
+        <div class="form-grid">
+          <label>أسابيع العمل المنتجة سنويًا
+            <input id="workingWeeks" inputmode="numeric" value="46" placeholder="مثال: 46">
+          </label>
+          <label>تكلفة الساعة المحملة — اختياري
+            <input id="loadedHourlyCost" inputmode="numeric" placeholder="مثال: 80">
+          </label>
+        </div>
         <div class="actions">
+          <button id="runDiagnostic" class="primary">شغّل التشخيص الجديد</button>
           <button id="copyJson" class="secondary">نسخ JSON نظيف</button>
           <button id="downloadJson" class="secondary">تحميل JSON</button>
           <button id="downloadCsv" class="secondary">تحميل CSV منظف</button>
@@ -71,13 +80,17 @@
 
     <section class="panel proposal-shell" aria-labelledby="table-title">
       <div class="proposal-toolbar">
-        <h2 id="table-title">جدول الردود بعد إزالة التكرار</h2>
+        <h2 id="table-title">مخرجات التشخيص والبيانات</h2>
         <div class="actions">
+          <button id="copyDiagnostic" class="secondary">نسخ التشخيص</button>
+          <button id="downloadDiagnostic" class="secondary">تحميل التشخيص HTML</button>
           <button id="showAll" class="secondary">عرض كل الأعمدة</button>
           <button id="showImportant" class="primary">عرض الأعمدة المهمة</button>
         </div>
       </div>
       <article class="proposal" aria-label="البيانات المستخرجة">
+        <div id="diagnosticOutput"><p class="empty">شغّل التشخيص الجديد بعد تحميل البيانات لعرض Current State → Intervention → Target State.</p></div>
+        <hr>
         <div id="dataTable"><p class="empty">حمّل بيانات تجريبية أو شيت لعرض الردود النظيفة هنا.</p></div>
       </article>
     </section>

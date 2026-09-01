@@ -135,11 +135,84 @@ function cleanCsv(){
   const esc = (v)=>`"${String(v ?? '').replace(/"/g,'""')}"`;
   return [state.headers.map(esc).join(','), ...rows.map(r=>state.headers.map(h=>esc(r[h])).join(','))].join('\n');
 }
+function compactForDiagnostic(){
+  const rows = buildAggregate().rows;
+  return rows.map(r=>({
+    name: personName(r),
+    email: pick(r,['Email','Email Address','البريد','الإيميل']),
+    dept: pick(r,['القسم']),
+    title: pick(r,['المسمى الوظيفي']),
+    years: pick(r,['سنوات خبرتك','سنوات الخبرة']),
+    tasks: repeatedTasks(r).map(([task,hours])=>({task,hours})),
+    dailyOutput: pick(r,['ما أكثر ما تنتجه']),
+    aiUsage: pick(r,['استخدامك لأدوات الذكاء الاصطناعي','استخدام أدوات الذكاء الاصطناعي']),
+    tools: pick(r,['الأدوات التي جربتها']),
+    furthestUse: pick(r,['أبعد ما وصلت إليه']),
+    promptScore: toNum(pick(r,['صياغة طلب واضح','تقييم صياغة الطلب'])),
+    qualityScore: toNum(pick(r,['الحكم على جودة','تقييم الحكم على جودة'])),
+    dataScore: toNum(pick(r,['ملفات وبيانات عملي','استخدام AI على بيانات العمل','تقييم استخدام AI على بيانات العمل'])),
+    automationScore: toNum(pick(r,['بناء خطوة أتمتة','تقييم بناء الأتمتة'])),
+    barriers: pick(r,['اختر كل ما ينطبق عليك','العوائق الحالية']),
+    trainingDemand: pick(r,['أولويتك الأولى من التدريب','أولوية التدريب']),
+    automationWish: pick(r,['لو اختفت مهمة واحدة','المهمة التي يتمنى الموظف']),
+    wasteHours: rowWasteHours(r),
+    employeeAutomatableOpinion: pick(r,['مجموع الساعات الأسبوعية','مجموع الساعات الأسبوعية القابلة للأتمتة']),
+    readiness: toNum(pick(r,['استعدادك لتطبيق','الاستعداد للتطبيق']))
+  }));
+}
+function listItems(items){ return (items||[]).slice(0,8).map(x=>`<li>${escapeHtml(typeof x === 'string' ? x : JSON.stringify(x))}</li>`).join('') || '<li>غير متوفر من البيانات الحالية.</li>'; }
+function money(n){ return Number.isFinite(Number(n)) ? `${Math.round(Number(n)).toLocaleString('ar-SA')} ريال` : 'غير محسوب'; }
+function diagnosticTable(rows, cols){
+  if(!rows || !rows.length) return '<p>غير متوفر من البيانات الحالية.</p>';
+  return `<table class="generated-table"><thead><tr>${cols.map(c=>`<th>${escapeHtml(c.label)}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,8).map(r=>`<tr>${cols.map(c=>`<td>${escapeHtml(r[c.key] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function renderDiagnostic(d){
+  const capability = diagnosticTable(d.capabilityLadder, [{key:'label',label:'المهارة'}, {key:'average',label:'المتوسط'}, {key:'lowPct',label:'% ١–٢'}, {key:'highPct',label:'% ٤–٥'}, {key:'interpretation',label:'المعنى'}]);
+  const clusters = diagnosticTable(d.processClusters, [{key:'name',label:'العملية'}, {key:'employeeCount',label:'الموظفون'}, {key:'weeklyHours',label:'ساعات/أسبوع'}, {key:'automationFeasibility',label:'قابلية الأتمتة'}, {key:'intervention',label:'التدخل'}]);
+  const beforeAfter = (d.beforeAfter||[]).slice(0,6).map(x=>`<div class="before-after-card"><h3>${escapeHtml(x.area)}</h3><div class="three-state"><div><b>قبل</b><p>${escapeHtml(x.before)}</p></div><div><b>التدخل</b><p>${escapeHtml(x.intervention)}</p></div><div><b>بعد</b><p>${escapeHtml(x.after)}</p></div></div></div>`).join('') || '<p>غير متوفر من البيانات الحالية.</p>';
+  $('diagnosticOutput').innerHTML = `<div class="cover"><img src="/logo-nahr.svg" alt="نهر"><h1>AI Transformation Diagnostic</h1><p>Current State → Intervention → Target State</p></div>
+    <h2>١. Executive Summary</h2><p>${escapeHtml(d.executiveSummary || '')}</p>
+    <div class="bi-kpis"><article class="bi-kpi"><span>الردود الفريدة</span><b>${escapeHtml(d.dataIntegrity?.uniqueRespondents ?? '')}</b><small>بعد فحص البيانات</small></article><article class="bi-kpi"><span>الساعات الأسبوعية المعلنة</span><b>${escapeHtml(d.wasteEngine?.reportedWeeklyHours ?? '')}</b><small>Reported capacity</small></article><article class="bi-kpi"><span>FTE equivalent</span><b>${escapeHtml(d.wasteEngine?.fteEquivalent ?? '')}</b><small>${escapeHtml(d.wasteEngine?.assumption || '')}</small></article><article class="bi-kpi"><span>Consulting Fee</span><b>${money(d.pricing?.consultingFee)}</b><small>${escapeHtml(d.pricing?.rule || '')}</small></article></div>
+    <h2>٢. Evidence Standard</h2><ul>${listItems(d.evidenceStandard)}</ul>
+    <h2>٣. Data Integrity Scan</h2><table class="generated-table"><tr><th>البند</th><th>القيمة</th></tr><tr><td>Total responses</td><td>${escapeHtml(d.dataIntegrity?.totalResponses ?? '')}</td></tr><tr><td>Unique respondents</td><td>${escapeHtml(d.dataIntegrity?.uniqueRespondents ?? '')}</td></tr><tr><td>Duplicates</td><td>${escapeHtml(d.dataIntegrity?.duplicates ?? '')}</td></tr><tr><td>Data quality</td><td>${escapeHtml(d.dataIntegrity?.dataQualityScore ?? '')}</td></tr></table>
+    <h2>٤. AI Capability Ladder</h2>${capability}
+    <h2>٥. Contradiction Engine</h2><ul>${listItems(d.contradictions)}</ul>
+    <h2>٦. Automation Blindness Index</h2><ul>${listItems(d.automationBlindness)}</ul>
+    <h2>٧. Process Clustering</h2>${clusters}
+    <h2>٨. Need vs Demand Gap</h2><ul>${listItems(d.needVsDemandGap)}</ul>
+    <h2>٩. Barrier Decomposition</h2>${diagnosticTable(d.barrierDecomposition, [{key:'barrier',label:'العائق'}, {key:'type',label:'نوعه'}, {key:'intervention',label:'التدخل'}])}
+    <h2>١٠. Before → Intervention → After</h2>${beforeAfter}
+    <h2>١١. Engagement Architecture</h2><ol>${listItems(d.engagementArchitecture).replaceAll('<li>','<li>')}</ol>
+    <h2>١٢. Value Case & Success Measurement</h2><p>الفرصة النظرية: ${escapeHtml(d.valueCase?.theoreticalOpportunityHours ?? '')} ساعة. الهدف الواقعي: ${escapeHtml(d.valueCase?.realisticTargetHours ?? '')} ساعة. ${escapeHtml(d.valueCase?.measurableValue || '')}</p><ul>${listItems(d.successMeasurement)}</ul>`;
+}
+async function runDiagnostic(){
+  const responses = compactForDiagnostic();
+  if(!responses.length){ setStatus('حمّل الشيت أولًا قبل تشغيل التشخيص.'); return; }
+  $('diagnosticOutput').innerHTML = '<p class="empty">جاري تشغيل محرك التشخيص الجديد...</p>';
+  setStatus('جاري تشغيل التشخيص الجديد من البيانات المستخرجة...');
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(), 90000);
+  try {
+    const res = await fetch('/api/diagnostic-proposal', { method:'POST', headers:{'content-type':'application/json'}, signal:controller.signal, body: JSON.stringify({ responses, workingWeeks: toNum($('workingWeeks')?.value || 46), loadedHourlyCost: toNum($('loadedHourlyCost')?.value || 0) || null }) });
+    clearTimeout(timeout);
+    const data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || 'Diagnostic failed');
+    renderDiagnostic(data);
+    setStatus(`تم تشغيل التشخيص الجديد باستخدام ${data.modelUsed || 'AI'}.`);
+  } catch(e) {
+    clearTimeout(timeout);
+    $('diagnosticOutput').innerHTML = '<p class="empty">تعذر تشغيل التشخيص الآن. جرب مرة أخرى أو قلل حجم الشيت.</p>';
+    setStatus('تعذر تشغيل التشخيص: ' + (e.message || 'خطأ غير معروف'));
+  }
+}
 $('loadSample').addEventListener('click',()=>{ state={headers:sampleHeaders, rows:sampleRows, source:'sample'}; render(); setStatus('تم تحميل بيانات تجريبية. هذه نسخة استخراج فقط بدون مولد.'); });
 $('loadSheet').addEventListener('click',loadSheet);
+$('runDiagnostic').addEventListener('click',runDiagnostic);
 $('showAll').addEventListener('click',()=>{ tableMode='all'; renderTable(); });
 $('showImportant').addEventListener('click',()=>{ tableMode='important'; renderTable(); });
 $('copyJson').addEventListener('click',async()=>{ await navigator.clipboard.writeText(JSON.stringify(cleanData(), null, 2)); setStatus('تم نسخ JSON النظيف.'); });
+$('copyDiagnostic').addEventListener('click',async()=>{ await navigator.clipboard.writeText($('diagnosticOutput').innerText); setStatus('تم نسخ التشخيص.'); });
+$('downloadDiagnostic').addEventListener('click',()=>download('nahr-ai-transformation-diagnostic.html','text/html;charset=utf-8','<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>تشخيص نهر</title><link rel="stylesheet" href="https://nahr-proposal-generator.vercel.app/styles.css"><body><main><article class="proposal">'+$('diagnosticOutput').innerHTML+'</article></main></body></html>'));
 $('downloadJson').addEventListener('click',()=>download('nahr-clean-responses.json','application/json;charset=utf-8',JSON.stringify(cleanData(), null, 2)));
 $('downloadCsv').addEventListener('click',()=>download('nahr-clean-responses.csv','text/csv;charset=utf-8',cleanCsv()));
 render();
