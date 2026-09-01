@@ -28,7 +28,7 @@ function clusterTask(text){
 function fallbackDiagnostic(input){
   const rows = Array.isArray(input.responses) ? input.responses : [];
   const weeks = Number(input.workingWeeks || 46);
-  const loadedHourlyCost = Number(input.loadedHourlyCost || 0);
+  const loadedHourlyCost = Number(input.loadedHourlyCost || ((Number(input.avgSalary || 0) > 0 && Number(input.monthlyHours || 0) > 0) ? Number(input.avgSalary) / Number(input.monthlyHours) : 0));
   const totalWeekly = rows.reduce((s,r)=>s+Number(r.wasteHours||0),0);
   const annualHours = totalWeekly * weeks;
   const annualWaste = loadedHourlyCost ? annualHours * loadedHourlyCost : null;
@@ -64,9 +64,9 @@ module.exports = async (req, res) => {
     if (req.method !== 'POST') return res.status(405).json({ error:'POST only' });
     const responses = Array.isArray(req.body?.responses) ? req.body.responses.slice(0, 120) : [];
     if (!responses.length) return res.status(400).json({ error:'Missing responses' });
-    const payload = { responses, assumptions:{ workingWeeks:req.body?.workingWeeks || 46, loadedHourlyCost:req.body?.loadedHourlyCost || null, pricingRule:'If validated cumulative annual waste is below SAR 1,000,000: fee = 10% × Annual Waste. If above SAR 1,000,000: fee = 55% × Annual Waste.' } };
+    const payload = { responses, assumptions:{ workingWeeks:req.body?.workingWeeks || 46, avgSalary:req.body?.avgSalary || null, monthlyHours:req.body?.monthlyHours || null, loadedHourlyCost:req.body?.loadedHourlyCost || ((Number(req.body?.avgSalary || 0) > 0 && Number(req.body?.monthlyHours || 0) > 0) ? Number(req.body.avgSalary) / Number(req.body.monthlyHours) : null), hourlyCostFormula:'loadedHourlyCost = avgSalary / monthlyHours', pricingRule:'If validated cumulative annual waste is below SAR 1,000,000: fee = 10% × Annual Waste. If above SAR 1,000,000: fee = 55% × Annual Waste.' } };
     const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_STUDIO_API_KEY;
-    if (!key) return res.status(200).json(fallbackDiagnostic(payload));
+    if (!key) return res.status(200).json(fallbackDiagnostic({ ...payload, ...payload.assumptions }));
     const prompt = `Act as a Senior AI Transformation, Operations Diagnostic & Value-Creation Consultant. Do NOT summarize the survey question by question. Reconstruct the organization's operating reality from cross-response evidence. Classify material claims as FACT, CALCULATION, INFERENCE, or HYPOTHESIS. Never invent numbers. Never manufacture ROI.\n\nReturn ONLY valid JSON in this shape:\n{\n "modelUsed":"gemini",\n "executiveSummary":"Arabic executive summary",\n "evidenceStandard":["FACT/CALCULATION/INFERENCE/HYPOTHESIS statements"],\n "dataIntegrity":{"totalResponses":number,"uniqueRespondents":number,"duplicates":number,"dataQualityScore":"low|medium|high","metricsSafeForCalculation":["..."],"metricsRequiringValidation":["..."]},\n "capabilityLadder":[{"label":"Prompting|Evaluation|Real Data|Automation","average":number,"median":number,"lowPct":number,"highPct":number,"interpretation":"Arabic"}],\n "contradictions":["Arabic contradiction with implication"],\n "automationBlindness":["Arabic gap findings"],\n "processClusters":[{"name":"Arabic workflow cluster","employeeCount":number,"departments":["..."],"weeklyHours":number,"automationFeasibility":"low|medium|high","dataSensitivity":"low|medium|high","intervention":"Arabic"}],\n "departmentWaste":[{"name":"department","respondents":number,"weeklyHours":number}],\n "wasteEngine":{"reportedWeeklyHours":number,"conservativeWeeklyHours":number,"annualHours":number,"fteEquivalent":number,"annualLaborWaste":number|null,"assumption":"Arabic"},\n "needVsDemandGap":["Arabic"],\n "barrierDecomposition":[{"barrier":"Arabic","type":"training|process|technology|governance|management|adoption","intervention":"Arabic"}],\n "peopleSegmentation":[{"segment":"Arabic","count":number,"intervention":"Arabic"}],\n "beforeAfter":[{"area":"Arabic","before":"Arabic evidence-based current state","intervention":"Arabic specific service change","after":"Arabic target state"}],\n "engagementArchitecture":["Arabic phases"],\n "valueCase":{"theoreticalOpportunityHours":number,"realisticTargetHours":number,"measurableValue":"Arabic"},\n "pricing":{"annualWasteUsed":number|null,"rule":"Arabic","consultingFee":number|null,"commercialReviewFlag":"Arabic or empty"},\n "successMeasurement":["Arabic KPI"]\n}\n\nInput data:\n${JSON.stringify(payload).slice(0, 60000)}`;
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
       method:'POST', headers:{'content-type':'application/json'},
@@ -77,6 +77,6 @@ module.exports = async (req, res) => {
     const text = data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
     return res.status(200).json(extractJson(text));
   } catch (e) {
-    return res.status(200).json({ ...fallbackDiagnostic({ responses:req.body?.responses || [], workingWeeks:req.body?.workingWeeks, loadedHourlyCost:req.body?.loadedHourlyCost }), warning:e.message });
+    return res.status(200).json({ ...fallbackDiagnostic({ responses:req.body?.responses || [], workingWeeks:req.body?.workingWeeks, avgSalary:req.body?.avgSalary, monthlyHours:req.body?.monthlyHours, loadedHourlyCost:req.body?.loadedHourlyCost }), warning:e.message });
   }
 };

@@ -165,6 +165,12 @@ function listItems(items){
   return arr.slice(0,8).map(x=>`<li>${escapeHtml(typeof x === 'string' ? x : JSON.stringify(x))}</li>`).join('') || '<li>غير متوفر من البيانات الحالية.</li>';
 }
 function money(n){ return Number.isFinite(Number(n)) ? `${Math.round(Number(n)).toLocaleString('ar-SA')} ريال` : 'غير محسوب'; }
+function financialInputs(){
+  const avgSalary = toNum($('avgSalary')?.value || 0);
+  const monthlyHours = toNum($('monthlyHours')?.value || 0);
+  const loadedHourlyCost = avgSalary > 0 && monthlyHours > 0 ? avgSalary / monthlyHours : null;
+  return { avgSalary, monthlyHours, loadedHourlyCost };
+}
 function diagnosticTable(rows, cols){
   if(!rows || !rows.length) return '<p>غير متوفر من البيانات الحالية.</p>';
   return `<table class="generated-table"><thead><tr>${cols.map(c=>`<th>${escapeHtml(c.label)}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,8).map(r=>`<tr>${cols.map(c=>`<td>${escapeHtml(r[c.key] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
@@ -173,9 +179,10 @@ function renderDiagnostic(d){
   const capability = diagnosticTable(d.capabilityLadder, [{key:'label',label:'المهارة'}, {key:'average',label:'المتوسط'}, {key:'lowPct',label:'% ١–٢'}, {key:'highPct',label:'% ٤–٥'}, {key:'interpretation',label:'المعنى'}]);
   const clusters = diagnosticTable(d.processClusters, [{key:'name',label:'العملية'}, {key:'employeeCount',label:'الموظفون'}, {key:'weeklyHours',label:'ساعات/أسبوع'}, {key:'automationFeasibility',label:'قابلية الأتمتة'}, {key:'intervention',label:'التدخل'}]);
   const beforeAfter = (d.beforeAfter||[]).slice(0,6).map(x=>`<div class="before-after-card"><h3>${escapeHtml(x.area)}</h3><div class="three-state"><div><b>قبل</b><p>${escapeHtml(x.before)}</p></div><div><b>التدخل</b><p>${escapeHtml(x.intervention)}</p></div><div><b>بعد</b><p>${escapeHtml(x.after)}</p></div></div></div>`).join('') || '<p>غير متوفر من البيانات الحالية.</p>';
+  const fin = financialInputs();
   $('diagnosticOutput').innerHTML = `<div class="cover"><img src="/logo-nahr.svg" alt="نهر"><h1>AI Transformation Diagnostic</h1><p>Current State → Intervention → Target State</p></div>
     <h2>١. Executive Summary</h2><p>${escapeHtml(d.executiveSummary || '')}</p>
-    <div class="bi-kpis"><article class="bi-kpi"><span>الردود الفريدة</span><b>${escapeHtml(d.dataIntegrity?.uniqueRespondents ?? '')}</b><small>بعد فحص البيانات</small></article><article class="bi-kpi"><span>الساعات الأسبوعية المعلنة</span><b>${escapeHtml(d.wasteEngine?.reportedWeeklyHours ?? '')}</b><small>Reported capacity</small></article><article class="bi-kpi"><span>FTE equivalent</span><b>${escapeHtml(d.wasteEngine?.fteEquivalent ?? '')}</b><small>${escapeHtml(d.wasteEngine?.assumption || '')}</small></article><article class="bi-kpi"><span>Consulting Fee</span><b>${money(d.pricing?.consultingFee)}</b><small>${escapeHtml(d.pricing?.rule || '')}</small></article></div>
+    <div class="bi-kpis"><article class="bi-kpi"><span>متوسط الراتب</span><b>${money(fin.avgSalary)}</b><small>مدخل منك</small></article><article class="bi-kpi"><span>تكلفة الساعة</span><b>${money(fin.loadedHourlyCost)}</b><small>${fin.avgSalary && fin.monthlyHours ? `${Math.round(fin.avgSalary).toLocaleString('ar-SA')} ÷ ${Math.round(fin.monthlyHours).toLocaleString('ar-SA')} ساعة` : 'تحتاج راتب وساعات شهرية'}</small></article><article class="bi-kpi"><span>الردود الفريدة</span><b>${escapeHtml(d.dataIntegrity?.uniqueRespondents ?? '')}</b><small>بعد فحص البيانات</small></article><article class="bi-kpi"><span>الساعات الأسبوعية المعلنة</span><b>${escapeHtml(d.wasteEngine?.reportedWeeklyHours ?? '')}</b><small>Reported capacity</small></article><article class="bi-kpi"><span>FTE equivalent</span><b>${escapeHtml(d.wasteEngine?.fteEquivalent ?? '')}</b><small>${escapeHtml(d.wasteEngine?.assumption || '')}</small></article><article class="bi-kpi"><span>Consulting Fee</span><b>${money(d.pricing?.consultingFee)}</b><small>${escapeHtml(d.pricing?.rule || '')}</small></article></div>
     <h2>٢. Evidence Standard</h2><ul>${listItems(d.evidenceStandard)}</ul>
     <h2>٣. Data Integrity Scan</h2><table class="generated-table"><tr><th>البند</th><th>القيمة</th></tr><tr><td>Total responses</td><td>${escapeHtml(d.dataIntegrity?.totalResponses ?? '')}</td></tr><tr><td>Unique respondents</td><td>${escapeHtml(d.dataIntegrity?.uniqueRespondents ?? '')}</td></tr><tr><td>Duplicates</td><td>${escapeHtml(d.dataIntegrity?.duplicates ?? '')}</td></tr><tr><td>Data quality</td><td>${escapeHtml(d.dataIntegrity?.dataQualityScore ?? '')}</td></tr></table>
     <h2>٤. AI Capability Ladder</h2>${capability}
@@ -196,7 +203,8 @@ async function runDiagnostic(){
   const controller = new AbortController();
   const timeout = setTimeout(()=>controller.abort(), 90000);
   try {
-    const res = await fetch('/api/diagnostic-proposal', { method:'POST', headers:{'content-type':'application/json'}, signal:controller.signal, body: JSON.stringify({ responses, workingWeeks: toNum($('workingWeeks')?.value || 46), loadedHourlyCost: toNum($('loadedHourlyCost')?.value || 0) || null }) });
+    const fin = financialInputs();
+    const res = await fetch('/api/diagnostic-proposal', { method:'POST', headers:{'content-type':'application/json'}, signal:controller.signal, body: JSON.stringify({ responses, workingWeeks: toNum($('workingWeeks')?.value || 46), avgSalary: fin.avgSalary || null, monthlyHours: fin.monthlyHours || null, loadedHourlyCost: fin.loadedHourlyCost }) });
     clearTimeout(timeout);
     const data = await res.json();
     if(!res.ok || data.error) throw new Error(data.error || 'Diagnostic failed');

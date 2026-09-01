@@ -64,9 +64,13 @@
           <label>أسابيع العمل المنتجة سنويًا
             <input id="workingWeeks" inputmode="numeric" value="46" placeholder="مثال: 46">
           </label>
-          <label>تكلفة الساعة المحملة — اختياري
-            <input id="loadedHourlyCost" inputmode="numeric" placeholder="مثال: 80">
+          <label>متوسط راتب الموظف شهريًا
+            <input id="avgSalary" inputmode="numeric" value="8000" placeholder="مثال: 8000">
           </label>
+          <label>ساعات عمل الموظف في الشهر
+            <input id="monthlyHours" inputmode="numeric" value="160" placeholder="مثال: 160">
+          </label>
+          <p class="formula-note">ما تحتاج تحسب تكلفة الساعة بنفسك. أدخل متوسط الراتب الشهري وساعات العمل الشهرية، والأداة تحسب: تكلفة الساعة = الراتب ÷ ساعات العمل.</p>
         </div>
         <div class="actions">
           <button id="runDiagnostic" class="primary">شغّل التشخيص الجديد</button>
