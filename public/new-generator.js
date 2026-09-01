@@ -160,7 +160,10 @@ function compactForDiagnostic(){
     readiness: toNum(pick(r,['استعدادك لتطبيق','الاستعداد للتطبيق']))
   }));
 }
-function listItems(items){ return (items||[]).slice(0,8).map(x=>`<li>${escapeHtml(typeof x === 'string' ? x : JSON.stringify(x))}</li>`).join('') || '<li>غير متوفر من البيانات الحالية.</li>'; }
+function listItems(items){
+  const arr = Array.isArray(items) ? items : (items && typeof items === 'object' ? Object.entries(items).map(([k,v])=>`${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`) : (items ? [items] : []));
+  return arr.slice(0,8).map(x=>`<li>${escapeHtml(typeof x === 'string' ? x : JSON.stringify(x))}</li>`).join('') || '<li>غير متوفر من البيانات الحالية.</li>';
+}
 function money(n){ return Number.isFinite(Number(n)) ? `${Math.round(Number(n)).toLocaleString('ar-SA')} ريال` : 'غير محسوب'; }
 function diagnosticTable(rows, cols){
   if(!rows || !rows.length) return '<p>غير متوفر من البيانات الحالية.</p>';
