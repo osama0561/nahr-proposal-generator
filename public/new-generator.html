@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>نهر — مساحة بناء المولد الجديد</title>
+  <link rel="icon" href="/logo-mark.svg" type="image/svg+xml">
+  <link rel="preload" href="/logo-nahr.svg" as="image">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/new-generator.html"><img src="/logo-nahr.svg" alt="نهر"><span>مساحة بناء المولد الجديد</span></a>
+    <span class="internal">نسخة تجريبية بدون مولد</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Google Forms → Clean Extracted Data</p>
+        <h1>نفس صفحة نهر، لكن بدون توليد عرض.</h1>
+        <p>هذه نسخة نظيفة نستخدمها كأساس للمولد الجديد. تقرأ نفس Google Sheet بنفس طريقة الاستخراج الحالية، تنظف التكرارات، وتعرض ملخص الشركة والبيانات الخام بدون إنشاء عرض فني أو مالي.</p>
+      </div>
+      <div class="warning">
+        <strong>مهم</strong>
+        <p>هذه الصفحة لا تستخدم Gemini ولا تولّد Proposal ولا تحسب سعر. هدفها فقط تثبيت مرحلة قراءة الشيت وتحويل الردود إلى بيانات جاهزة نبني عليها الوظائف الجديدة.</p>
+        <div class="template-links">
+          <a href="/">الرجوع للمولد الحالي</a>
+          <a href="/example-responses.csv">CSV تجريبي</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel controls" aria-labelledby="source-title">
+      <h2 id="source-title">١. مصدر الإجابات</h2>
+      <label>رابط Google Sheet
+        <input id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+      </label>
+      <div class="actions">
+        <button id="loadSample" class="secondary">استخدم بيانات تجريبية</button>
+        <button id="loadSheet" class="primary">اقرأ الشيت</button>
+      </div>
+      <p class="note">يستخدم نفس endpoint الحالي: <code>/api/read-sheet</code>. إذا كان الشيت خاصًا، لازم يكون قابلًا للتصدير كـ CSV أو مشتركًا بالطريقة المناسبة لاحقًا.</p>
+      <output id="loadStatus" aria-live="polite"></output>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel row-picker" aria-labelledby="overview-title">
+        <h2 id="overview-title">٢. نظرة الشركة كاملة</h2>
+        <label>الشركة أو الجهة
+          <input id="companyName" placeholder="اسم الجهة، مثال: شركة نفوذ">
+        </label>
+        <label>القطاع
+          <select id="companySector"><option>القطاع الحكومي</option><option>القطاع الخاص</option><option>القطاع غير الربحي</option></select>
+        </label>
+        <div id="companyOverview" class="company-overview"></div>
+      </aside>
+
+      <section class="panel generator" aria-labelledby="data-title">
+        <h2 id="data-title">٣. البيانات المستخرجة</h2>
+        <p class="formula-note">هنا نثبت أن القراءة والتنظيف تعمل قبل بناء المولد الجديد. لاحقًا نضيف الوظائف الجديدة فوق هذه البيانات بدل ما نعدل المولد القديم مباشرة.</p>
+        <div class="actions">
+          <button id="copyJson" class="secondary">نسخ JSON نظيف</button>
+          <button id="downloadJson" class="secondary">تحميل JSON</button>
+          <button id="downloadCsv" class="secondary">تحميل CSV منظف</button>
+        </div>
+        <div id="schemaSummary" class="company-overview"></div>
+      </section>
+    </section>
+
+    <section class="panel proposal-shell" aria-labelledby="table-title">
+      <div class="proposal-toolbar">
+        <h2 id="table-title">جدول الردود بعد إزالة التكرار</h2>
+        <div class="actions">
+          <button id="showAll" class="secondary">عرض كل الأعمدة</button>
+          <button id="showImportant" class="primary">عرض الأعمدة المهمة</button>
+        </div>
+      </div>
+      <article class="proposal" aria-label="البيانات المستخرجة">
+        <div id="dataTable"><p class="empty">حمّل بيانات تجريبية أو شيت لعرض الردود النظيفة هنا.</p></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="/new-generator.js" defer></script>
+</body>
+</html>
