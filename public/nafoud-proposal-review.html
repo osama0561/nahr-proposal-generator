@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نسخة مراجعة — عرض نهر لشركة نفوذ التطوير</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E262C; --ink2:#16353D; --ink3:#1E434C;
+  --paper:#F6F4EF; --paper2:#EAE5DA;
+  --brass:#B9863B; --brass-lt:#D8AE6A;
+  --alert:#9C3B2E;
+  --mute:#55696E; --mute-dk:#9FB4B9;
+  --font:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:#07171B;color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* ---------- deck shell ---------- */
+.deck{max-width:1440px;margin:0 auto;padding:24px 16px 80px;display:flex;flex-direction:column;gap:22px}
+.slide{
+  position:relative;container-type:inline-size;
+  aspect-ratio:16/9;overflow:hidden;
+  background:var(--paper);border-radius:10px;
+  padding:5cqw 5.5cqw;display:flex;flex-direction:column;
+  box-shadow:0 1px 0 rgba(255,255,255,.06);
+}
+.slide.dark{background:var(--ink);color:var(--paper)}
+.num{position:absolute;top:2.2cqw;right:2.6cqw;
+  font-size:1.15cqw;font-weight:500;color:var(--mute);letter-spacing:.04em;direction:ltr;unicode-bidi:isolate}
+.dark .num{color:#4E7079}
+
+/* ---------- type ---------- */
+.eyebrow{font-size:1.35cqw;font-weight:600;color:var(--brass);margin-bottom:.9cqw}
+h2{font-size:3.15cqw;font-weight:700;line-height:1.28;letter-spacing:-.01em;max-width:24ch}
+.dark h2{color:#fff}
+.lede{font-size:1.55cqw;font-weight:300;line-height:1.75;color:var(--mute);max-width:52ch}
+.dark .lede{color:var(--mute-dk)}
+.note{font-size:1.12cqw;font-weight:300;color:var(--mute);line-height:1.7}
+.dark .note{color:var(--mute-dk)}
+.foot{margin-top:auto;padding-top:2cqw;font-size:1.08cqw;font-weight:300;color:var(--mute);line-height:1.65}
+.dark .foot{color:#7D989F}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding-block:2.2cqw}
+
+/* ---------- pieces ---------- */
+.grid{display:grid;gap:1.5cqw}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+.card{background:var(--paper2);border-radius:8px;padding:2cqw 2.2cqw}
+.card.solid{background:var(--ink);color:var(--paper)}
+.card.brass{background:var(--brass);color:#fff}
+.dark .card{background:var(--ink2)}
+.card h3{font-size:1.72cqw;font-weight:600;line-height:1.4;margin-bottom:.8cqw}
+.card p{font-size:1.22cqw;font-weight:300;line-height:1.7;color:var(--mute)}
+.card.solid p,.card.brass p,.dark .card p{color:var(--mute-dk)}
+.card.brass p{color:rgba(255,255,255,.9)}
+
+.stat{font-size:4.6cqw;font-weight:700;line-height:1;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.stat.brass{color:var(--brass)}
+.stat.sm{font-size:3.1cqw}
+.stat-lbl{font-size:1.2cqw;font-weight:400;line-height:1.6;color:var(--mute);margin-top:.85cqw}
+.card.solid .stat-lbl,.dark .card .stat-lbl{color:var(--mute-dk)}
+.card.brass .stat-lbl{color:rgba(255,255,255,.92)}
+
+/* horizontal bar rows */
+.bars{display:flex;flex-direction:column;gap:1.25cqw}
+.bar{display:grid;grid-template-columns:1fr 4.4cqw;gap:1.4cqw;align-items:center}
+.bar .track{background:#E1DBCE;border-radius:3px;height:2.5cqw;position:relative;overflow:hidden}
+.dark .bar .track{background:#123039}
+.bar .fill{position:absolute;inset-block:0;inset-inline-end:0;background:var(--ink);border-radius:3px}
+.dark .bar .fill{background:var(--brass)}
+.bar .fill.brass{background:var(--brass)}
+.bar .fill.alert{background:var(--alert)}
+.bar .val{font-size:1.6cqw;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.bar-lbl{font-size:1.22cqw;font-weight:400;margin-bottom:.35cqw}
+.bar-wrap{display:flex;flex-direction:column}
+
+/* 7 blocks */
+.pips{display:grid;grid-template-columns:repeat(7,1fr);gap:1.1cqw}
+.pip{aspect-ratio:3/4;border-radius:7px;display:grid;place-items:center;
+  font-size:2.5cqw;font-weight:700;background:var(--paper2);color:var(--mute)}
+.pip.on{background:var(--brass);color:#fff}
+
+/* dots */
+.dots{display:grid;grid-template-columns:repeat(6,1fr);gap:1.1cqw;max-width:34cqw}
+.dot{aspect-ratio:1;border-radius:50%;background:var(--paper2)}
+.dot.on{background:var(--ink)}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:1.3cqw}
+th,td{padding:1.05cqw 1.4cqw;text-align:right}
+th{font-weight:600;font-size:1.18cqw;color:var(--mute);border-bottom:1px solid #DCD5C7}
+.dark th{color:var(--mute-dk);border-color:#1E434C}
+td{border-bottom:1px solid #E6E0D3}
+.dark td{border-color:#173940}
+tr:last-child td{border-bottom:none}
+td.n{font-variant-numeric:tabular-nums;font-weight:600}
+td.money{font-variant-numeric:tabular-nums;font-weight:700;color:var(--brass)}
+tr.total td{background:var(--ink);color:#fff;font-weight:700;font-size:1.5cqw}
+tr.total td.money{color:var(--brass-lt)}
+
+/* timeline */
+.tl{display:grid;grid-template-columns:repeat(5,1fr);gap:1.1cqw;position:relative}
+.tl::before{content:"";position:absolute;inset-inline:4%;top:3.1cqw;height:2px;background:#DCD5C7}
+.tl .step{position:relative;text-align:center;display:flex;flex-direction:column;gap:.7cqw}
+.tl .wk{font-size:1.15cqw;font-weight:600;color:var(--brass)}
+.tl .knob{width:1.5cqw;height:1.5cqw;border-radius:50%;background:var(--ink);
+  margin:.5cqw auto;border:.35cqw solid var(--paper);position:relative;z-index:1}
+.tl .step:last-child .knob{background:var(--brass)}
+.tl .nm{font-size:1.32cqw;font-weight:600;line-height:1.4}
+.tl .out{font-size:1.05cqw;font-weight:300;color:var(--mute);line-height:1.6}
+
+/* lists */
+ul.clean{list-style:none;display:flex;flex-direction:column;gap:.95cqw}
+ul.clean li{font-size:1.28cqw;font-weight:300;line-height:1.6;padding-inline-start:1.6cqw;position:relative;color:var(--mute)}
+ul.clean li::before{content:"";position:absolute;inset-inline-start:0;top:.62cqw;
+  width:.5cqw;height:.5cqw;border-radius:50%;background:var(--brass)}
+.card.solid ul.clean li,.dark ul.clean li{color:var(--mute-dk)}
+
+/* numbered sequence */
+ol.seq{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:1.35cqw}
+ol.seq li{counter-increment:s;display:grid;grid-template-columns:2.6cqw 1fr;gap:1.3cqw;align-items:start}
+ol.seq li::before{content:counter(s);width:2.6cqw;height:2.6cqw;border-radius:50%;
+  background:var(--brass);color:#fff;display:grid;place-items:center;
+  font-size:1.3cqw;font-weight:700}
+ol.seq .t{font-size:1.5cqw;font-weight:600;line-height:1.45}
+ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;margin-top:.3cqw}
+.dark ol.seq .d{color:var(--mute-dk)}
+.dark ol.seq .t{color:#fff}
+
+/* cover */
+.cover{justify-content:center}
+.cover h1{font-size:4.3cqw;font-weight:700;line-height:1.24;color:#fff;letter-spacing:-.02em}
+.cover h1 span{display:block;color:var(--brass);font-size:3.35cqw;margin-top:.5cqw}
+.cover .sub{font-size:1.6cqw;font-weight:300;color:var(--mute-dk);margin-top:1.8cqw;max-width:46ch}
+.cover .who{margin-top:3cqw;font-size:1.35cqw;line-height:2;color:var(--paper)}
+.cover .who b{font-weight:600}
+.orb{position:absolute;inset-inline-start:-6cqw;inset-block-end:-10cqw;
+  width:34cqw;height:34cqw;border-radius:50%;background:var(--ink2)}
+.orb::after{content:"";position:absolute;inset:33%;border-radius:50%;background:var(--brass);opacity:.85}
+.cover>*{position:relative;z-index:1}
+
+.thesis{justify-content:center;gap:1.6cqw}
+.thesis .big{font-size:4.1cqw;font-weight:700;line-height:1.26;color:#fff;max-width:26ch}
+.thesis .sec{font-size:2.15cqw;font-weight:300;color:var(--brass-lt);line-height:1.5}
+.thesis .tail{font-size:1.45cqw;font-weight:300;color:var(--mute-dk);max-width:60ch;line-height:1.75;
+  border-inline-start:.3cqw solid var(--brass);padding-inline-start:1.6cqw;margin-top:1cqw}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:2cqw;align-items:stretch}
+.vs{display:grid;place-content:center;text-align:center;border-radius:8px;padding:2.4cqw}
+.vs.a{background:var(--ink);color:#fff}
+.vs.b{background:var(--paper2)}
+.dark .vs.b{background:var(--ink2)}
+.vs .k{font-size:1.35cqw;font-weight:500;color:var(--mute-dk)}
+.vs.b .k{color:var(--mute)}
+.vs .v{font-size:7.4cqw;font-weight:700;line-height:1;margin:.7cqw 0;font-variant-numeric:tabular-nums}
+.vs.a .v{color:#fff}
+.vs.b .v{color:var(--brass)}
+.vs .s{font-size:1.22cqw;font-weight:500;color:var(--brass)}
+.vs.b .s{color:var(--ink)}
+
+.two-col{display:grid;grid-template-columns:1.35fr 1fr;gap:2.2cqw;align-items:start}
+
+/* ---------- brand / commercial notes ---------- */
+.brand-logo{position:absolute;inset-block-start:2.1cqw;inset-inline-end:2.6cqw;width:8.8cqw;height:auto;z-index:2;object-fit:contain;opacity:.96}
+.cover .brand-logo{width:12cqw;inset-block-start:3cqw;inset-inline-end:3.2cqw}
+.dark .brand-logo{filter:brightness(0) invert(1);opacity:.92}
+.price-old{display:inline-block;position:relative;color:var(--mute);font-weight:600;margin-inline-end:.5cqw}
+.price-old::after{content:"";position:absolute;left:-.2em;right:-.2em;top:52%;height:.12em;background:var(--alert);transform:rotate(-7deg);border-radius:10px}
+.price-free{display:inline-block;background:rgba(185,134,59,.16);color:var(--brass);font-weight:700;border-radius:999px;padding:.2cqw .75cqw;white-space:nowrap}
+.hire-card .stat{font-size:3.4cqw}
+.hire-card p{font-size:1.15cqw;line-height:1.65}
+.option-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1cqw}
+.option-card{background:var(--paper2);border-radius:8px;padding:1.6cqw;display:flex;flex-direction:column;gap:.55cqw;min-height:15cqw}
+.option-card.featured{background:var(--brass);color:#fff}
+.option-card h3{font-size:1.42cqw;line-height:1.35;font-weight:700}
+.option-card .price{margin-top:auto;font-size:1.9cqw;font-weight:700;font-variant-numeric:tabular-nums;color:var(--brass)}
+.option-card.featured .price{color:#fff}
+.option-card p{font-size:1.05cqw;line-height:1.6;color:var(--mute)}
+.option-card.featured p{color:rgba(255,255,255,.9)}
+@media (max-width:860px){
+  .brand-logo{position:absolute;top:14px;left:16px;right:auto;width:72px}.cover .brand-logo{width:92px;top:18px;left:18px;right:auto}
+  .option-grid{grid-template-columns:1fr;gap:12px}.option-card{padding:16px;min-height:0}.option-card h3{font-size:17px}.option-card .price{font-size:22px}.option-card p,.hire-card p{font-size:14px}
+}
+
+
+/* ---------- mobile: real readability ---------- */
+@media (max-width:860px){
+  .deck{padding:14px 10px 60px;gap:14px}
+  .slide{aspect-ratio:auto;min-height:0;padding:26px 20px;border-radius:8px;container-type:normal}
+  .num{position:static;margin-bottom:10px;font-size:11px}
+  .eyebrow{font-size:12px;margin-bottom:8px}
+  h2{font-size:23px;max-width:none}
+  .lede{font-size:15px;max-width:none}
+  .note,.foot{font-size:13px}
+  .foot{padding-top:18px}
+  .body{padding-block:20px;gap:16px}
+  .grid{gap:12px}
+  .g2,.g3,.g5,.split,.two-col,.tl{grid-template-columns:1fr}
+  .tl::before{display:none}
+  .card{padding:16px}
+  .card h3{font-size:17px}
+  .card p{font-size:14px}
+  .stat{font-size:34px}.stat.sm{font-size:28px}
+  .stat-lbl{font-size:13px;margin-top:6px}
+  .bar{grid-template-columns:1fr 44px;gap:10px}
+  .bar .track{height:22px}
+  .bar .val{font-size:15px}
+  .bar-lbl{font-size:13px}
+  .pips{grid-template-columns:repeat(7,1fr);gap:6px}
+  .pip{font-size:16px;border-radius:5px}
+  .dots{grid-template-columns:repeat(6,1fr);gap:8px;max-width:none}
+  table{font-size:13px}
+  th,td{padding:9px 8px;font-size:13px}
+  tr.total td{font-size:14px}
+  .tl .step{text-align:right;border-inline-start:2px solid var(--paper2);padding-inline-start:14px}
+  .tl .knob{display:none}
+  .tl .wk{font-size:12px}.tl .nm{font-size:15px}.tl .out{font-size:13px}
+  ul.clean li{font-size:14px;padding-inline-start:14px}
+  ul.clean li::before{width:5px;height:5px;top:8px}
+  ol.seq li{grid-template-columns:26px 1fr;gap:12px}
+  ol.seq li::before{width:26px;height:26px;font-size:13px}
+  ol.seq .t{font-size:15px}.ol-seq .d,ol.seq .d{font-size:13px}
+  .cover h1{font-size:28px}.cover h1 span{font-size:22px}
+  .cover .sub{font-size:15px;margin-top:14px}
+  .cover .who{font-size:13px;margin-top:22px}
+  .orb{display:none}
+  .thesis .big{font-size:26px}.thesis .sec{font-size:17px}.thesis .tail{font-size:14px;padding-inline-start:12px;border-inline-start-width:3px}
+  .vs{padding:20px}
+  .vs .v{font-size:56px}
+  .vs .k{font-size:13px}.vs .s{font-size:13px}
+}
+
+@media print{
+  body{background:#fff}
+  .deck{max-width:none;padding:0;gap:0}
+  .slide{aspect-ratio:16/9;border-radius:0;break-after:page;box-shadow:none}
+  @page{size:A4 landscape;margin:0}
+}
+</style>
+</head>
+<body>
+<main class="deck">
+
+<!-- 1 -->
+<section class="slide dark cover">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="orb"></div>
+  <h1>عرض تمكين الطبقة الإشرافية<span>ورفع الكفاءة التشغيلية</span></h1>
+  <p class="sub">برنامج مبني على تشخيص ميداني لعيّنة مشرفي شركة نفوذ التطوير — لا على تقديرات مسبقة.</p>
+  <div class="who">
+    <div><b>مقدَّم من:</b> نهر لتمكين الموظفين وأنظمة العمل</div>
+    <div><b>مقدَّم إلى:</b> شركة نفوذ التطوير</div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">2 / 18</div>
+  <p class="eyebrow">العيّنة</p>
+  <h2>التشخيص أُجري على الطبقة الإشرافية وحدها</h2>
+  <div class="body two-col">
+    <div style="display:flex;flex-direction:column;gap:1.6cqw">
+      <p class="lede">اثنا عشر مشرفًا يقودون عمليات إدارة الأملاك والمشاريع والصيانة وإدارة المرافق والمالية والقانونية والتسويق. سبعة منهم أكملوا التشخيص، وهم مصدر كل رقم في هذا العرض.</p>
+      <div class="grid g2">
+        <div class="card"><div class="stat sm">7</div><div class="stat-lbl">مشرفين أكملوا التشخيص</div></div>
+        <div class="card"><div class="stat sm brass">58%</div><div class="stat-lbl">نسبة الاستجابة — كافية للتشخيص، وتُستكمل قبل التنفيذ</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="dots">
+        <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+        <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+        <div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <p class="note" style="margin-top:1.2cqw">7 مشرفين من أصل 12</p>
+    </div>
+  </div>
+  <p class="foot">الخمسة الباقون لم تُجمع بياناتهم بعد، وتُستكمل في الأسبوع الأول من المشروع.</p>
+</section>
+
+<!-- 3 -->
+<section class="slide dark thesis">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">3 / 18</div>
+  <p class="eyebrow">الخلاصة</p>
+  <p class="big">مشرفو نفوذ يريدون التطبيق ولا يستطيعونه.</p>
+  <p class="sec">استعدادهم للتطبيق 4.9 من 5 — وقدرتهم على بناء الأتمتة 1.7 من 5.</p>
+  <p class="tail">هذه أفضل فجوة يمكن أن يواجهها أي برنامج تطوير: الرغبة موجودة، والمطلوب فقط أن يُبنى ما يقابلها.</p>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">4 / 18</div>
+  <p class="eyebrow">القدرة</p>
+  <h2>سلّم القدرة ينهار عند الدرجة الأخيرة</h2>
+  <div class="body two-col">
+    <div class="bars">
+      <div class="bar-wrap"><span class="bar-lbl">الحكم على جودة المخرَج</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:78%"></div></div><span class="val">3.9</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">التطبيق على بيانات العمل الحقيقية</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:66%"></div></div><span class="val">3.3</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">صياغة طلب واضح يعطي نتيجة دقيقة</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:52%"></div></div><span class="val">2.6</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">بناء خطوة أتمتة تعمل دون تدخل</span>
+        <div class="bar"><div class="track"><div class="fill brass" style="width:34%"></div></div><span class="val">1.7</span></div></div>
+    </div>
+    <div class="grid">
+      <div class="card solid"><div class="stat sm brass">1.7 من 5</div><div class="stat-lbl">قدرة المشرفين على بناء الأتمتة — أدنى بُعد في التشخيص كله</div></div>
+      <div class="card"><h3>ماذا يعني هذا؟</h3><p>المشرف يعرف أن يسأل الأداة، ويعرف أن يحكم على جوابها — لكنه لا يعرف أن يبني إجراءً يعمل من نفسه. فيبقى كل شيء يدويًا.</p></div>
+    </div>
+  </div>
+  <p class="foot">المقياس من 1 إلى 5، تقييم ذاتي من المشرفين أنفسهم.</p>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">5 / 18</div>
+  <p class="eyebrow">حدّة الفجوة</p>
+  <h2>خمسة من كل سبعة مشرفين عند الدرجة الأدنى</h2>
+  <div class="body">
+    <div class="pips">
+      <div class="pip on">1</div><div class="pip on">1</div><div class="pip on">1</div>
+      <div class="pip on">1</div><div class="pip on">1</div>
+      <div class="pip">3</div><div class="pip">4</div>
+    </div>
+    <p class="note" style="margin-top:1.4cqw">درجة كل مشرف في بناء الأتمتة — الدرجة الأدنى تعني: لا أستطيع بناءها إطلاقًا.</p>
+    <div class="card solid" style="margin-top:2cqw">
+      <h3 style="color:#fff;margin:0">من بين هؤلاء الخمسة: مسؤول المالية، ومسؤول الشؤون القانونية، ومشرف إدارة أملاك، ومدير مشاريع.</h3>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">6 / 18</div>
+  <p class="eyebrow">المفارقة</p>
+  <h2>الرغبة في أعلى مستوى، والقدرة في أدناه</h2>
+  <div class="body split">
+    <div class="vs a"><span class="k">الاستعداد للتطبيق</span><span class="v">4.9</span><span class="s">من 5 — أعلى درجة في التشخيص كله</span></div>
+    <div class="vs b"><span class="k">القدرة على بناء الأتمتة</span><span class="v">1.7</span><span class="s">من 5 — أدنى بُعد في التشخيص كله</span></div>
+  </div>
+  <p class="foot">الفجوة ليست في الدافع. لذلك لا تُعالَج بالتحفيز، بل بالبناء.</p>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">7 / 18</div>
+  <p class="eyebrow">عمق الاستخدام</p>
+  <h2>الاستخدام يومي — والعمق يتوقف قبل الأتمتة</h2>
+  <div class="body bars">
+    <div class="bar-wrap"><span class="bar-lbl">كتابة وصياغة نصوص</span>
+      <div class="bar"><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">7</span></div></div>
+    <div class="bar-wrap"><span class="bar-lbl">تحليل ملفات وبيانات</span>
+      <div class="bar"><div class="track"><div class="fill" style="width:43%"></div></div><span class="val">3</span></div></div>
+    <div class="bar-wrap"><span class="bar-lbl">بناء تعليمات مخصصة متكررة</span>
+      <div class="bar"><div class="track"><div class="fill brass" style="width:14%"></div></div><span class="val">1</span></div></div>
+    <div class="bar-wrap"><span class="bar-lbl">بناء أتمتة تعمل دون تدخل</span>
+      <div class="bar"><div class="track"><div class="fill alert" style="width:1.5%"></div></div><span class="val" style="color:var(--alert)">صفر</span></div></div>
+  </div>
+  <p class="foot">لا أحد من المشرفين وصل إلى الأتمتة — مع أن أربعة منهم يستخدمون الأدوات يوميًا. العدد من أصل سبعة.</p>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">8 / 18</div>
+  <p class="eyebrow">العوائق</p>
+  <h2>ما يمنع المشرفين ليس نقص الأدوات</h2>
+  <div class="body two-col">
+    <div class="bars">
+      <div class="bar-wrap"><span class="bar-lbl">ضيق الوقت</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">5</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">لم أبدأ بجدية</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:60%"></div></div><span class="val">3</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">لا أثق بدقة المخرَج</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:40%"></div></div><span class="val">2</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">لا أعرف كيف أطبّقها على عملي</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:40%"></div></div><span class="val">2</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">لا أعرف من أين أبدأ</span>
+        <div class="bar"><div class="track"><div class="fill" style="width:40%"></div></div><span class="val">2</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">القلق على سرية بيانات العملاء</span>
+        <div class="bar"><div class="track"><div class="fill brass" style="width:20%"></div></div><span class="val">1</span></div></div>
+      <div class="bar-wrap"><span class="bar-lbl">غياب سياسة استخدام معتمدة</span>
+        <div class="bar"><div class="track"><div class="fill brass" style="width:20%"></div></div><span class="val">1</span></div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h3>عائق يُحلّ بقرار</h3><p>غياب السياسة والقلق على السرية عائقان يزولان بوثيقة معتمدة وقرار إداري — لا بتدريب، ولا بميزانية.</p></div>
+      <div class="card solid"><h3 style="color:#fff">عائق يُحلّ ببناء</h3><p>«ضيق الوقت» و«لم أبدأ» و«لا أعرف كيف أطبّق» ليست ثلاثة عوائق، بل عائق واحد: لا يوجد إجراء جاهز يُتبَع.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">9 / 18</div>
+  <p class="eyebrow">الأثر المالي — الحد الأدنى</p>
+  <h2>الهدر في وقت المشرفين أنفسهم</h2>
+  <div class="body">
+    <div class="grid g3">
+      <div class="card"><div class="stat sm">10 ساعات</div><div class="stat-lbl">يهدرها المشرف الواحد أسبوعيًا في مهام متكررة، بإقراره هو</div></div>
+      <div class="card"><div class="stat sm">120 ساعة</div><div class="stat-lbl">إجمالي الطبقة الإشرافية أسبوعيًا (12 مشرفًا)</div></div>
+      <div class="card solid"><div class="stat sm brass">160,080</div><div class="stat-lbl">ريال تكلفة سنوية مباشرة على وقت المشرفين وحدهم</div></div>
+    </div>
+    <p class="lede" style="margin-top:2.2cqw;color:var(--ink);font-weight:500;max-width:none">
+      120 ساعة أسبوعيًا = 5,520 ساعة سنويًا = ثلاث وظائف كاملة تذهب في التكرار، داخل الطبقة التي يُفترض أن تقود التحسين.</p>
+  </div>
+  <p class="foot">محتسب بمتوسط الساعات المقرّة من المشرفين السبعة، مطبَّقًا على الاثني عشر · تكلفة الساعة 29 ريالًا (4,500 شهريًا ÷ 1,840 ساعة عمل فعلية).</p>
+</section>
+
+<!-- 10 -->
+<section class="slide dark">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">10 / 18</div>
+  <p class="eyebrow">نطاق الإشراف</p>
+  <h2>قيمة المشرف ليست في ساعاته، بل في ساعات فريقه</h2>
+  <div class="body two-col">
+    <table>
+      <thead><tr><th>القسم</th><th>عدد الموظفين</th><th>الهدر السنوي</th></tr></thead>
+      <tbody>
+        <tr><td>إدارة الأملاك</td><td class="n">20</td><td class="money">210,772</td></tr>
+        <tr><td>المشاريع والجودة</td><td class="n">5</td><td class="money">39,353</td></tr>
+        <tr><td>القانونية</td><td class="n">3</td><td class="money">37,352</td></tr>
+        <tr><td>التسويق</td><td class="n">2</td><td class="money">37,352</td></tr>
+        <tr><td>المالية</td><td class="n">2</td><td class="money">31,349</td></tr>
+        <tr class="total"><td>الإجمالي</td><td class="n">32</td><td class="money">356,178</td></tr>
+      </tbody>
+    </table>
+    <div class="card brass">
+      <div class="stat sm">356,178 ريال</div>
+      <div class="stat-lbl">الهدر السنوي في نطاق إشراف هؤلاء الاثني عشر مشرفًا — عبر 32 موظفًا يعملون تحت إجراءاتهم.</div>
+      <p style="margin-top:1.4cqw;font-weight:600;color:#fff;font-size:1.3cqw">هذا هو الرقم الذي يعالجه البرنامج.</p>
+    </div>
+  </div>
+  <p class="foot">مستبعد من الحساب كليًا: خدمة العملاء ومركز الاتصال — هدر إضافي قائم لم يُعلن في هذا العرض.</p>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">11 / 18</div>
+  <p class="eyebrow">المنهجية</p>
+  <h2>لماذا هذه الأرقام هي الحد الأدنى؟</h2>
+  <div class="body">
+    <ol class="seq">
+      <li><div><div class="t">لم نستخدم ساعات المهام المعلنة إطلاقًا</div><div class="d">استُخدمت فقط الشريحة التي اختارها كل موظف بنفسه، وبمنتصفها لا بحدها الأعلى.</div></div></li>
+      <li><div><div class="t">استبعدنا كل رقم غير منطقي</div><div class="d">أُلغيت كل استجابة تجاوز فيها مجموع ساعات المهام 48 ساعة أسبوعيًا.</div></div></li>
+      <li><div><div class="t">اعتمدنا الراتب الأساسي دون التأمينات</div><div class="d">لو أُضيفت اشتراكات التأمينات الاجتماعية لبلغت تكلفة الساعة 32.8 ريالًا بدل 29.</div></div></li>
+      <li><div><div class="t">أهملنا أن رواتب المشرفين أعلى من المتوسط</div><div class="d">الهدر يشمل محامين ومحاسبين ومديري مشاريع، وحُسبوا جميعًا بأدنى متوسط.</div></div></li>
+      <li><div><div class="t">لم نحتسب أي خسارة غير مباشرة</div><div class="d">تأخر التحصيل، تأخر الرد على الملاك، أخطاء العقود، المواعيد القضائية الضائعة — كلها خارج الحساب.</div></div></li>
+    </ol>
+  </div>
+  <p class="foot">كل رقم في هذا العرض قابل للإثبات من بيانات التشخيص، وليس تقديرًا من نهر.</p>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">12 / 18</div>
+  <p class="eyebrow">نطاق العمل</p>
+  <h2>أربعة مسارات — التدريب واحد منها فقط</h2>
+  <div class="body grid g2">
+    <div class="card"><h3>خط الأساس والقياس</h3><p>توصيف الوضع الحالي لست عمليات، وقياس قبلي موثق، ولوحة مؤشرات لا تتجاوز 12 مؤشرًا بمالك محدد لكل واحد.</p></div>
+    <div class="card"><h3>تمكين المشرفين</h3><p>خمس وحدات مطبَّقة على ملفات نفوذ الحقيقية: صياغة الطلب، الحكم على المخرَج، التطبيق على البيانات، بناء الأتمتة، الحوكمة.</p></div>
+    <div class="card"><h3>الإجراءات ومؤشرات القياس</h3><p>ستة إجراءات تشغيلية معتمدة بخطواتها ومالكيها وأزمنة استجابتها، وقوالب موحدة للمتابعة والتحصيل والخطابات القانونية.</p></div>
+    <div class="card solid"><h3 style="color:#fff">البناء على أنظمة نفوذ</h3><p>ثلاث أتمتات مسلَّمة على أنظمة تُحدَّد في الأسبوعين الأولين، مع موظف من نفوذ يتسلمها ويصبح مالكها التشغيلي.</p></div>
+  </div>
+  <p class="foot">إذا تبيّن أن نظامًا مستهدفًا مغلق أو لا يتيح ربطًا برمجيًا، يُحوَّل المخصص نفسه إلى بناء طبقة تشغيل مستقلة تحقق الغرض ذاته.</p>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">13 / 18</div>
+  <p class="eyebrow">الجدول الزمني</p>
+  <h2>ثلاثة أشهر من اعتماد العرض وتوفير الوصول</h2>
+  <div class="body">
+    <div class="tl">
+      <div class="step"><span class="wk">الأسبوع 1–2</span><div class="knob"></div><span class="nm">التشخيص وخط الأساس</span><span class="out">وثيقة خط أساس معتمدة وتحديد الأنظمة المستهدفة</span></div>
+      <div class="step"><span class="wk">الأسبوع 3–7</span><div class="knob"></div><span class="nm">تمكين المشرفين</span><span class="out">خمس وحدات تدريبية مطبَّقة على ملفات حقيقية</span></div>
+      <div class="step"><span class="wk">الأسبوع 5–9</span><div class="knob"></div><span class="nm">الإجراءات والمؤشرات</span><span class="out">ستة إجراءات معتمدة ولوحة مؤشرات جاهزة</span></div>
+      <div class="step"><span class="wk">الأسبوع 6–11</span><div class="knob"></div><span class="nm">البناء على الأنظمة</span><span class="out">ثلاث أتمتات مسلَّمة مع دليل تشغيل</span></div>
+      <div class="step"><span class="wk">الأسبوع 12</span><div class="knob"></div><span class="nm">القياس البعدي والتسليم</span><span class="out">تقرير الأثر وتوصيات المرحلة التالية</span></div>
+    </div>
+    <div class="card" style="margin-top:2.4cqw"><h3 style="margin:0">يتوقف احتساب مدة المسار الرابع في حال تأخر توفير الوصول للأنظمة، ويستأنف عند توفره.</h3></div>
+  </div>
+  <p class="foot">يتخلل المدة ثلاثة اجتماعات متابعة مع الإدارة لمراجعة التقدم ومعالجة المعوقات.</p>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">14 / 18</div>
+  <p class="eyebrow">المقابل الاستثماري</p>
+  <h2>المقابل يعالج فجوة لا يغطيها التوظيف الفردي وحده</h2>
+  <div class="body two-col">
+    <table>
+      <thead><tr><th>البند</th><th>الوحدة</th><th>القيمة</th></tr></thead>
+      <tbody>
+        <tr><td>التدقيق والتحليل التشخيصي الأولي</td><td>قراءة البيانات وتحديد الفجوات</td><td class="money"><span class="price-old">20,000</span><span class="price-free">مشمولة مجانًا</span></td></tr>
+        <tr><td>تمكين المشرفين</td><td>12 مقعدًا × 5,000</td><td class="money">60,000</td></tr>
+        <tr><td>الإجراءات ومؤشرات القياس</td><td>ست عمليات</td><td class="money">40,000</td></tr>
+        <tr><td>البناء على الأنظمة</td><td>ثلاث أتمتات</td><td class="money">40,000</td></tr>
+        <tr class="total"><td>الإجمالي المستحق</td><td>ريال سعودي</td><td class="money">140,000</td></tr>
+      </tbody>
+    </table>
+    <div class="card brass hire-card">
+      <div class="stat">11,667 ريال</div>
+      <div class="stat-lbl">شهريًا لمدة سنة تقريبًا — وهو ما يعادل إجمالي هذا العرض.</div>
+      <p style="margin-top:1.2cqw;color:#fff;font-weight:500">هذا قريب من تكلفة راتب مرشح قوي في الذكاء الاصطناعي والأتمتة لمدة عام واحد. لكن التوظيف الفردي يمنحكم شخصًا واحدًا داخل الفريق؛ أما هذا النطاق فيمنحكم تشخيصًا، وتمكين 12 مشرفًا، وإجراءات قابلة للاعتماد، ومؤشرات قياس، وثلاث أتمتات مسلَّمة.</p>
+      <p style="margin-top:.9cqw;color:rgba(255,255,255,.92)">بعبارة أخرى: المقابل ليس تكلفة تدريب فقط، بل نقل قدرة داخلية قابلة للتكرار على مستوى الطبقة الإشرافية.</p>
+    </div>
+  </div>
+  <p class="foot">الأسعار بالريال السعودي غير شاملة ضريبة القيمة المضافة · صلاحية العرض 30 يومًا من تاريخه.</p>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">15 / 18</div>
+  <p class="eyebrow">مرونة الاعتماد</p>
+  <h2>يمكن اعتماد النطاق كاملًا أو البدء بما تحتاجونه أولًا</h2>
+  <div class="body">
+    <p class="lede" style="max-width:none;margin-bottom:1.8cqw;color:var(--ink)">لا يلزم شراء جميع البنود دفعة واحدة. يمكن لنفوذ اختيار المسار الأكثر أولوية الآن، ثم إضافة مسارات أخرى لاحقًا حسب الحاجة وبنطاق وتسعير واضحين.</p>
+    <div class="option-grid">
+      <div class="option-card featured"><h3>البرنامج الكامل</h3><p>التشخيص + التمكين + الإجراءات + البناء على الأنظمة.</p><div class="price">140,000</div></div>
+      <div class="option-card"><h3>تمكين المشرفين</h3><p>خمس وحدات مطبَّقة على ملفات نفوذ الحقيقية للطبقة الإشرافية.</p><div class="price">60,000</div></div>
+      <div class="option-card"><h3>الإجراءات والمؤشرات</h3><p>ست عمليات تشغيلية معتمدة ولوحة مؤشرات مختصرة بمالكين واضحين.</p><div class="price">40,000</div></div>
+      <div class="option-card"><h3>البناء على الأنظمة</h3><p>ثلاث أتمتات مسلَّمة على الأنظمة المتاحة أو طبقة تشغيل بديلة.</p><div class="price">40,000</div></div>
+    </div>
+    <div class="card solid" style="margin-top:1.8cqw"><h3 style="color:#fff;margin:0">أي احتياج إضافي خارج البنود أعلاه — مثل أتمتات إضافية، تدريب فرق غير إشرافية، أو ربط أنظمة أوسع — يُسعَّر بشكل مستقل بعد تحديد النطاق.</h3></div>
+  </div>
+  <p class="foot">الهدف أن يبدأ القرار من الأولوية العملية: ما الذي تحتاجه نفوذ الآن، وما الذي يمكن إضافته لاحقًا دون إرباك النطاق.</p>
+</section>
+
+<!-- 16 -->
+<section class="slide dark">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">16 / 18</div>
+  <p class="eyebrow">العائد على الاستثمار</p>
+  <h2>محسوب على أدنى سيناريو استرداد</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div class="card"><div class="stat sm brass">30%</div><div class="stat-lbl">نسبة الاسترداد المفترضة — من ساعات أقرّ بها الموظفون أنفسهم</div></div>
+      <div class="card"><div class="stat sm brass">106,853</div><div class="stat-lbl">ريال قيمة سنوية مستردة، متكررة كل سنة</div></div>
+      <div class="card"><div class="stat sm brass">16 شهرًا</div><div class="stat-lbl">فترة استرداد رأس المال بالكامل</div></div>
+      <div class="card brass"><div class="stat sm">2.3 ضعف</div><div class="stat-lbl">مضاعف العائد خلال ثلاث سنوات</div></div>
+    </div>
+    <p class="lede" style="margin-top:2.2cqw;color:#fff;font-weight:500;max-width:none">
+      صافي العائد خلال ثلاث سنوات: 180,559 ريال — مع استمرار القيمة بعدها بلا تكلفة إضافية.</p>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">17 / 18</div>
+  <p class="eyebrow">حدود واضحة</p>
+  <h2>ما تلتزم به نفوذ — وما لا يشمله النطاق</h2>
+  <div class="body split">
+    <div class="card">
+      <h3>مسؤوليات نفوذ التطوير</h3>
+      <ul class="clean">
+        <li>ترشيح موظف مخصص بما لا يقل عن 8 ساعات أسبوعيًا</li>
+        <li>توفير الوصول للأنظمة والبيانات في الأسبوعين الأولين</li>
+        <li>التزام المشرفين الاثني عشر بحضور الوحدات كاملة</li>
+        <li>اعتماد الإجراءات والمؤشرات خلال أسبوعين من كل مسودة</li>
+        <li>تسمية راعٍ تنفيذي لرفع المعوقات واعتماد القرارات</li>
+      </ul>
+    </div>
+    <div class="card solid">
+      <h3 style="color:#fff">ما لا يشمله النطاق</h3>
+      <ul class="clean">
+        <li>تدريب الموظفين غير المشرفين — مرحلة ثانية مستقلة</li>
+        <li>خدمة العملاء ومركز الاتصال</li>
+        <li>الصيانة وإدارة المرافق حتى تُجمع بياناتهما</li>
+        <li>أي أتمتة رابعة أو إجراء سابع فأكثر</li>
+        <li>التطوير البرمجي الكامل لأي نظام قائم</li>
+        <li>تراخيص الأدوات ومنصات الربط</li>
+      </ul>
+    </div>
+  </div>
+  <p class="foot">كل بند مما لا يشمله النطاق قابل للإضافة بعرض مستقل ومسعّر منفصل.</p>
+</section>
+
+<!-- 18 -->
+<section class="slide dark">
+  <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
+  <div class="num">18 / 18</div>
+  <p class="eyebrow">الخطوة التالية</p>
+  <h2>أربع خطوات لبدء التنفيذ</h2>
+  <div class="body">
+    <ol class="seq">
+      <li><div><div class="t">اعتماد نطاق العمل والمقابل الاستثماري</div></div></li>
+      <li><div><div class="t">تسمية الراعي التنفيذي وترشيح الموظف المخصص للمسار الرابع</div></div></li>
+      <li><div><div class="t">جدولة الأسبوعين الأولين لتحديد الأنظمة وقياس خط الأساس</div></div></li>
+      <li><div><div class="t">تثبيت مواعيد الوحدات التدريبية للمشرفين الاثني عشر</div></div></li>
+    </ol>
+  </div>
+  <p class="foot" style="color:var(--brass-lt);font-weight:600;font-size:1.3cqw">نهر لتمكين الموظفين وأنظمة العمل</p>
+</section>
+
+</main>
+
+<script>
+// arrow-key navigation between slides
+const slides = [...document.querySelectorAll('.slide')];
+let i = 0;
+function go(n){ i = Math.max(0, Math.min(slides.length - 1, n)); slides[i].scrollIntoView({behavior:'smooth', block:'start'}); }
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(i + 1); }
+  if (e.key === 'ArrowRight' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(slides.length - 1);
+});
+// keep index in sync with scrolling
+const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) i = slides.indexOf(en.target); }), {threshold:.55});
+slides.forEach(s => io.observe(s));
+</script>
+</body>
+</html>
