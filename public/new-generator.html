@@ -61,6 +61,21 @@
         <h2 id="data-title">٣. البيانات المستخرجة</h2>
         <p class="formula-note">هنا نثبت أن القراءة والتنظيف تعمل قبل بناء المولد الجديد. الآن أضفنا محرك تشخيص أولي مبني على البرومبت الجديد: Data Integrity، Capability Ladder، Process Clustering، Waste Engine، Before/After، Pricing، وSuccess Measurement.</p>
         <div class="form-grid">
+          <label>اسم العميل / الجهة
+            <input id="customerName" value="شركة نفوذ التطوير" placeholder="مثال: شركة نفوذ التطوير">
+          </label>
+          <label>رابط شعار العميل
+            <input id="customerLogoUrl" value="/nufouth-logo-full.png" placeholder="https://example.com/logo.png">
+          </label>
+          <label>رفع شعار من جهازك
+            <input id="customerLogoFile" type="file" accept="image/*">
+          </label>
+          <label>لون العرض الأساسي
+            <input id="proposalColor" type="color" value="#0E262C">
+          </label>
+          <label>لون التمييز
+            <input id="accentColor" type="color" value="#B9863B">
+          </label>
           <label>أسابيع العمل المنتجة سنويًا
             <input id="workingWeeks" inputmode="numeric" value="46" placeholder="مثال: 46">
           </label>
@@ -70,10 +85,31 @@
           <label>ساعات عمل الموظف في الشهر
             <input id="monthlyHours" inputmode="numeric" value="160" placeholder="مثال: 160">
           </label>
-          <p class="formula-note">ما تحتاج تحسب تكلفة الساعة بنفسك. أدخل متوسط الراتب الشهري وساعات العمل الشهرية، والأداة تحسب: تكلفة الساعة = الراتب ÷ ساعات العمل.</p>
+          <label>عدد المقاعد التدريبية
+            <input id="trainingSeats" inputmode="numeric" value="12" placeholder="مثال: 12">
+          </label>
+          <label>سعر المقعد التدريبي
+            <input id="seatPrice" inputmode="numeric" value="5000" placeholder="مثال: 5000">
+          </label>
+          <label>سعر الإجراءات والمؤشرات
+            <input id="processPrice" inputmode="numeric" value="40000" placeholder="مثال: 40000">
+          </label>
+          <label>سعر البناء على الأنظمة
+            <input id="automationPrice" inputmode="numeric" value="40000" placeholder="مثال: 40000">
+          </label>
+          <label>قيمة التدقيق قبل الخصم
+            <input id="auditPrice" inputmode="numeric" value="20000" placeholder="مثال: 20000">
+          </label>
+          <label>نسبة الدفعة الأولية
+            <input id="paymentPct" inputmode="numeric" value="50" placeholder="مثال: 50">
+          </label>
+          <p class="formula-note">المدخلات الثابتة هنا تصنع نفس البرزنتيشن صفحة بصفحة لأي عميل: الشيت يعطي التشخيص والأرقام، وأنت تتحكم باسم العميل والشعار والألوان والأسعار وشروط الدفع.</p>
         </div>
         <div class="actions">
           <button id="runDiagnostic" class="primary">شغّل التشخيص الجديد</button>
+          <button id="buildProposal" class="primary">ولّد العرض صفحة بصفحة</button>
+          <button id="printProposal" class="secondary">طباعة / حفظ PDF</button>
+          <button id="downloadProposalHtml" class="secondary">تحميل HTML العرض</button>
           <button id="copyJson" class="secondary">نسخ JSON نظيف</button>
           <button id="downloadJson" class="secondary">تحميل JSON</button>
           <button id="downloadCsv" class="secondary">تحميل CSV منظف</button>
@@ -93,6 +129,8 @@
         </div>
       </div>
       <article class="proposal" aria-label="البيانات المستخرجة">
+        <div id="proposalDeckOutput"><p class="empty">بعد تحميل الشيت، اضغط “ولّد العرض صفحة بصفحة” لإخراج Proposal بنفس منطق PDF الحالي.</p></div>
+        <hr>
         <div id="diagnosticOutput"><p class="empty">شغّل التشخيص الجديد بعد تحميل البيانات لعرض Current State → Intervention → Target State.</p></div>
         <hr>
         <div id="dataTable"><p class="empty">حمّل بيانات تجريبية أو شيت لعرض الردود النظيفة هنا.</p></div>
