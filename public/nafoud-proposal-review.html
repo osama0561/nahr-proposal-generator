@@ -30,8 +30,8 @@ body{font-family:var(--font);background:#07171B;color:var(--ink);-webkit-font-sm
   box-shadow:0 1px 0 rgba(255,255,255,.06);
 }
 .slide.dark{background:var(--ink);color:var(--paper)}
-.num{position:absolute;top:2.2cqw;right:2.6cqw;
-  font-size:1.15cqw;font-weight:500;color:var(--mute);letter-spacing:.04em;direction:ltr;unicode-bidi:isolate}
+.num{position:absolute;top:2.2cqw;left:50%;right:auto;transform:translateX(-50%);
+  font-size:1.05cqw;font-weight:500;color:var(--mute);letter-spacing:.04em;direction:ltr;unicode-bidi:isolate;z-index:1}
 .dark .num{color:#4E7079}
 
 /* ---------- type ---------- */
@@ -168,13 +168,12 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 .two-col{display:grid;grid-template-columns:1.35fr 1fr;gap:2.2cqw;align-items:start}
 
 /* ---------- brand / commercial notes ---------- */
-.brand-logo{position:absolute;inset-block-start:2.1cqw;inset-inline-end:2.6cqw;width:8.8cqw;height:auto;z-index:2;object-fit:contain;opacity:.96}
-.cover .brand-logo{width:12cqw;inset-block-start:3cqw;inset-inline-end:3.2cqw}
+.brand-logo{position:absolute;top:2.1cqw;right:2.6cqw;left:auto;width:7.2cqw;height:auto;z-index:2;object-fit:contain;opacity:.96}
+.cover .brand-logo{width:10.5cqw;top:3.3cqw;right:4.4cqw;left:auto}
 .dark .brand-logo{filter:brightness(0) invert(1);opacity:.92}
-.client-logo{position:absolute;inset-block-start:2.1cqw;inset-inline-start:2.6cqw;width:5.4cqw;height:5.4cqw;z-index:2;object-fit:contain;border-radius:.65cqw;box-shadow:0 .45cqw 1.2cqw rgba(0,0,0,.12)}
-.cover .client-logo{width:16cqw;height:auto;inset-block-start:3.1cqw;inset-inline-start:4.4cqw;border-radius:0;box-shadow:none;filter:none}
-.cover .brand-logo{width:10.5cqw;inset-block-start:3.3cqw;inset-inline-end:4.4cqw}
-.cover .cover-rule{position:absolute;inset-block-start:10.2cqw;inset-inline:4.4cqw;height:1px;background:rgba(255,255,255,.11);z-index:1}
+.client-logo{position:absolute;top:2.1cqw;left:2.6cqw;right:auto;width:4.8cqw;height:4.8cqw;z-index:2;object-fit:contain;border-radius:.55cqw;box-shadow:0 .35cqw .9cqw rgba(0,0,0,.10)}
+.cover .client-logo{width:16cqw;height:auto;top:3.1cqw;left:4.4cqw;right:auto;border-radius:0;box-shadow:none;filter:none}
+.cover .cover-rule{position:absolute;top:10.2cqw;left:4.4cqw;right:4.4cqw;height:1px;background:rgba(255,255,255,.11);z-index:1}
 .cover .cover-body{position:relative;z-index:1;max-width:63cqw;margin-inline-start:auto;margin-inline-end:0;padding-top:3.2cqw}
 .cover .cover-tag{display:inline-flex;align-items:center;gap:.6cqw;border:1px solid rgba(216,174,106,.35);background:rgba(185,134,59,.10);color:var(--brass-lt);border-radius:999px;padding:.55cqw 1.05cqw;font-size:1.08cqw;font-weight:600;margin-bottom:1.25cqw}
 .cover .cover-card{margin-top:2.4cqw;display:grid;grid-template-columns:1fr 1fr;gap:1cqw;max-width:54cqw}
