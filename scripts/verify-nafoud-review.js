@@ -11,16 +11,19 @@ const { chromium } = require('playwright');
       title: document.title,
       slides: slides.length,
       logos: document.querySelectorAll('.brand-logo').length,
+      clientLogos: document.querySelectorAll('.client-logo').length,
       hasAuditFree: document.body.textContent.includes('مشمولة مجانًا'),
       hasHireComparison: document.body.textContent.includes('11,667 ريال'),
       hasModularPage: document.body.textContent.includes('مرونة الاعتماد'),
+      hasPaymentTerms: document.body.textContent.includes('50% دفعة أولية'),
       nums
     };
   });
   console.log(JSON.stringify(result, null, 2));
   if (result.slides !== 18) throw new Error('Expected 18 slides');
-  if (result.logos !== 18) throw new Error('Expected logo on every slide');
-  if (!result.hasAuditFree || !result.hasHireComparison || !result.hasModularPage) throw new Error('Missing requested content');
+  if (result.logos !== 18) throw new Error('Expected Nahr logo on every slide');
+  if (result.clientLogos !== 18) throw new Error('Expected Nufouth logo on every slide');
+  if (!result.hasAuditFree || !result.hasHireComparison || !result.hasModularPage || !result.hasPaymentTerms) throw new Error('Missing requested content');
 
   await page.locator('.slide').nth(13).screenshot({ path: '/opt/data/nahr-proposal-generator/test-results/nafoud-review-slide14.png' });
   await page.locator('.slide').nth(14).screenshot({ path: '/opt/data/nahr-proposal-generator/test-results/nafoud-review-slide15.png' });
