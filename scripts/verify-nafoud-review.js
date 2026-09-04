@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
       hasAuditFree: document.body.textContent.includes('مشمولة مجانًا'),
       hasHireComparison: document.body.textContent.includes('11,667 ريال'),
       hasModularPage: document.body.textContent.includes('مرونة الاعتماد'),
-      hasPaymentTerms: document.body.textContent.includes('50% دفعة أولية'),
+      hasPaymentTerms: !!document.querySelector('.payment-banner') && document.querySelector('.payment-banner').textContent.includes('50%') && document.querySelector('.payment-banner').textContent.includes('دفعة أولية'),
       nums
     };
   });

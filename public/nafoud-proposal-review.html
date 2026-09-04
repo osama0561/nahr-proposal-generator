@@ -183,6 +183,10 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 .price-old{display:inline-block;position:relative;color:var(--mute);font-weight:600;margin-inline-end:.5cqw}
 .price-old::after{content:"";position:absolute;left:-.2em;right:-.2em;top:52%;height:.12em;background:var(--alert);transform:rotate(-7deg);border-radius:10px}
 .price-free{display:inline-block;background:rgba(185,134,59,.16);color:var(--brass);font-weight:700;border-radius:999px;padding:.2cqw .75cqw;white-space:nowrap}
+.payment-banner{margin-top:1.55cqw;background:var(--ink);color:#fff;border-radius:10px;padding:1.25cqw 1.55cqw;display:grid;grid-template-columns:auto 1fr;gap:1.15cqw;align-items:center;box-shadow:0 .55cqw 1.4cqw rgba(14,38,44,.16)}
+.payment-banner .pct{direction:ltr;unicode-bidi:isolate;font-size:2.9cqw;font-weight:800;color:var(--brass-lt);line-height:1;white-space:nowrap}
+.payment-banner .txt{font-size:1.33cqw;font-weight:700;line-height:1.55;color:#fff}
+.payment-banner .subtxt{display:block;margin-top:.25cqw;font-size:1.02cqw;font-weight:400;color:var(--mute-dk);line-height:1.45}
 .hire-card .stat{font-size:3.4cqw}
 .hire-card p{font-size:1.15cqw;line-height:1.65}
 .option-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1cqw}
@@ -196,7 +200,7 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 @media (max-width:860px){
   .brand-logo{position:absolute;top:14px;right:16px;left:auto;width:72px}.cover .brand-logo{width:92px;top:18px;right:18px;left:auto}
   .client-logo{position:absolute;top:14px;left:16px;right:auto;width:46px;height:46px}.cover .client-logo{width:112px;height:auto;top:18px;left:18px;right:auto}.cover .cover-rule{display:none}.cover .cover-body{max-width:none;padding-top:62px}.cover .cover-tag{font-size:12px;padding:6px 10px}.cover .cover-card{grid-template-columns:1fr;max-width:none;gap:10px}.cover .cover-card div{font-size:13px;padding:12px}
-  .option-grid{grid-template-columns:1fr;gap:12px}.option-card{padding:16px;min-height:0}.option-card h3{font-size:17px}.option-card .price{font-size:22px}.option-card p,.hire-card p{font-size:14px}
+  .option-grid{grid-template-columns:1fr;gap:12px}.option-card{padding:16px;min-height:0}.option-card h3{font-size:17px}.option-card .price{font-size:22px}.option-card p,.hire-card p{font-size:14px}.payment-banner{grid-template-columns:1fr;padding:14px;margin-top:14px}.payment-banner .pct{font-size:28px}.payment-banner .txt{font-size:15px}.payment-banner .subtxt{font-size:13px}
 }
 
 
@@ -552,7 +556,13 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
       <p style="margin-top:.9cqw;color:rgba(255,255,255,.92)">بعبارة أخرى: المقابل ليس تكلفة تدريب فقط، بل نقل قدرة داخلية قابلة للتكرار على مستوى الطبقة الإشرافية.</p>
     </div>
   </div>
-  <p class="foot">الأسعار بالريال السعودي غير شاملة ضريبة القيمة المضافة · صلاحية العرض 30 يومًا من تاريخه.<br><b>آلية الدفع:</b> 50% دفعة أولية من قيمة الخدمة المرغوبة عند الاعتماد، ويُستكمل المتبقي حسب مراحل التنفيذ المتفق عليها.</p>
+  <div class="payment-banner">
+    <div class="pct">50%</div>
+    <div class="txt">دفعة أولية من قيمة الخدمة المرغوبة عند الاعتماد
+      <span class="subtxt">ويُستكمل المتبقي حسب مراحل التنفيذ المتفق عليها.</span>
+    </div>
+  </div>
+  <p class="foot">الأسعار بالريال السعودي غير شاملة ضريبة القيمة المضافة · صلاحية العرض 30 يومًا من تاريخه.</p>
 </section>
 
 <!-- 15 -->
