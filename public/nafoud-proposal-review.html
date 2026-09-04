@@ -135,15 +135,15 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 .dark ol.seq .t{color:#fff}
 
 /* cover */
-.cover{justify-content:center}
-.cover h1{font-size:4.3cqw;font-weight:700;line-height:1.24;color:#fff;letter-spacing:-.02em}
-.cover h1 span{display:block;color:var(--brass);font-size:3.35cqw;margin-top:.5cqw}
-.cover .sub{font-size:1.6cqw;font-weight:300;color:var(--mute-dk);margin-top:1.8cqw;max-width:46ch}
-.cover .who{margin-top:3cqw;font-size:1.35cqw;line-height:2;color:var(--paper)}
+.cover{justify-content:center;padding:4.6cqw 5.2cqw;background:radial-gradient(circle at 17% 26%, rgba(185,134,59,.16), transparent 27cqw), var(--ink)}
+.cover h1{font-size:4.65cqw;font-weight:700;line-height:1.18;color:#fff;letter-spacing:-.02em;max-width:15ch}
+.cover h1 span{display:block;color:var(--brass-lt);font-size:3.2cqw;margin-top:.65cqw}
+.cover .sub{font-size:1.45cqw;font-weight:300;color:var(--mute-dk);margin-top:1.65cqw;max-width:49ch;line-height:1.85}
+.cover .who{display:none}
 .cover .who b{font-weight:600}
-.orb{position:absolute;inset-inline-start:-6cqw;inset-block-end:-10cqw;
-  width:34cqw;height:34cqw;border-radius:50%;background:var(--ink2)}
-.orb::after{content:"";position:absolute;inset:33%;border-radius:50%;background:var(--brass);opacity:.85}
+.orb{position:absolute;inset-inline-start:-11cqw;inset-block-end:-15cqw;
+  width:42cqw;height:42cqw;border-radius:50%;background:rgba(30,67,76,.75)}
+.orb::after{content:"";position:absolute;inset:37%;border-radius:50%;background:var(--brass);opacity:.9}
 .cover>*{position:relative;z-index:1}
 
 .thesis{justify-content:center;gap:1.6cqw}
@@ -172,7 +172,14 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 .cover .brand-logo{width:12cqw;inset-block-start:3cqw;inset-inline-end:3.2cqw}
 .dark .brand-logo{filter:brightness(0) invert(1);opacity:.92}
 .client-logo{position:absolute;inset-block-start:2.1cqw;inset-inline-start:2.6cqw;width:5.4cqw;height:5.4cqw;z-index:2;object-fit:contain;border-radius:.65cqw;box-shadow:0 .45cqw 1.2cqw rgba(0,0,0,.12)}
-.cover .client-logo{width:6.8cqw;height:6.8cqw;inset-block-start:3cqw;inset-inline-start:3.2cqw}
+.cover .client-logo{width:16cqw;height:auto;inset-block-start:3.1cqw;inset-inline-start:4.4cqw;border-radius:0;box-shadow:none;filter:none}
+.cover .brand-logo{width:10.5cqw;inset-block-start:3.3cqw;inset-inline-end:4.4cqw}
+.cover .cover-rule{position:absolute;inset-block-start:10.2cqw;inset-inline:4.4cqw;height:1px;background:rgba(255,255,255,.11);z-index:1}
+.cover .cover-body{position:relative;z-index:1;max-width:63cqw;margin-inline-start:auto;margin-inline-end:0;padding-top:3.2cqw}
+.cover .cover-tag{display:inline-flex;align-items:center;gap:.6cqw;border:1px solid rgba(216,174,106,.35);background:rgba(185,134,59,.10);color:var(--brass-lt);border-radius:999px;padding:.55cqw 1.05cqw;font-size:1.08cqw;font-weight:600;margin-bottom:1.25cqw}
+.cover .cover-card{margin-top:2.4cqw;display:grid;grid-template-columns:1fr 1fr;gap:1cqw;max-width:54cqw}
+.cover .cover-card div{border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.035);border-radius:.85cqw;padding:1.05cqw 1.25cqw;color:var(--paper);font-size:1.1cqw;line-height:1.65}
+.cover .cover-card b{display:block;color:var(--brass-lt);font-size:.95cqw;margin-bottom:.15cqw}
 .price-old{display:inline-block;position:relative;color:var(--mute);font-weight:600;margin-inline-end:.5cqw}
 .price-old::after{content:"";position:absolute;left:-.2em;right:-.2em;top:52%;height:.12em;background:var(--alert);transform:rotate(-7deg);border-radius:10px}
 .price-free{display:inline-block;background:rgba(185,134,59,.16);color:var(--brass);font-weight:700;border-radius:999px;padding:.2cqw .75cqw;white-space:nowrap}
@@ -188,7 +195,7 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 .option-card.featured p{color:rgba(255,255,255,.9)}
 @media (max-width:860px){
   .brand-logo{position:absolute;top:14px;right:16px;left:auto;width:72px}.cover .brand-logo{width:92px;top:18px;right:18px;left:auto}
-  .client-logo{position:absolute;top:14px;left:16px;right:auto;width:46px;height:46px}.cover .client-logo{width:58px;height:58px;top:18px;left:18px;right:auto}
+  .client-logo{position:absolute;top:14px;left:16px;right:auto;width:46px;height:46px}.cover .client-logo{width:112px;height:auto;top:18px;left:18px;right:auto}.cover .cover-rule{display:none}.cover .cover-body{max-width:none;padding-top:62px}.cover .cover-tag{font-size:12px;padding:6px 10px}.cover .cover-card{grid-template-columns:1fr;max-width:none;gap:10px}.cover .cover-card div{font-size:13px;padding:12px}
   .option-grid{grid-template-columns:1fr;gap:12px}.option-card{padding:16px;min-height:0}.option-card h3{font-size:17px}.option-card .price{font-size:22px}.option-card p,.hire-card p{font-size:14px}
 }
 
@@ -254,13 +261,17 @@ ol.seq .d{font-size:1.15cqw;font-weight:300;color:var(--mute);line-height:1.65;m
 <!-- 1 -->
 <section class="slide dark cover">
   <img class="brand-logo" src="/logo-nahr.svg" alt="شعار نهر">
-  <img class="client-logo" src="/nufouth-logo-0.png" alt="شعار نفوذ التطوير">
+  <img class="client-logo" src="/nufouth-logo-full.png" alt="شعار نفوذ التطوير">
+  <div class="cover-rule"></div>
   <div class="orb"></div>
-  <h1>عرض تمكين الطبقة الإشرافية<span>ورفع الكفاءة التشغيلية</span></h1>
-  <p class="sub">برنامج مبني على تشخيص ميداني لعيّنة مشرفي شركة نفوذ التطوير — لا على تقديرات مسبقة.</p>
-  <div class="who">
-    <div><b>مقدَّم من:</b> نهر لتمكين الموظفين وأنظمة العمل</div>
-    <div><b>مقدَّم إلى:</b> شركة نفوذ التطوير</div>
+  <div class="cover-body">
+    <p class="cover-tag">عرض فني ومالي مخصص</p>
+    <h1>تمكين الطبقة الإشرافية<span>ورفع الكفاءة التشغيلية</span></h1>
+    <p class="sub">برنامج مبني على تشخيص ميداني لعيّنة مشرفي شركة نفوذ التطوير، لتحويل جاهزية الفريق إلى تطبيقات تشغيلية قابلة للقياس.</p>
+    <div class="cover-card">
+      <div><b>مقدَّم إلى</b>شركة نفوذ التطوير</div>
+      <div><b>مقدَّم من</b>نهر لتمكين الموظفين وأنظمة العمل</div>
+    </div>
   </div>
 </section>
 
