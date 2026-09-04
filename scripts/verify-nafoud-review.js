@@ -27,6 +27,6 @@ const { chromium } = require('playwright');
 
   await page.locator('.slide').nth(13).screenshot({ path: '/opt/data/nahr-proposal-generator/test-results/nafoud-review-slide14.png' });
   await page.locator('.slide').nth(14).screenshot({ path: '/opt/data/nahr-proposal-generator/test-results/nafoud-review-slide15.png' });
-  await page.pdf({ path: '/opt/data/nahr-proposal-generator/public/nafoud-proposal-review.pdf', format: 'A4', landscape: true, printBackground: true });
+  await page.pdf({ path: '/opt/data/nahr-proposal-generator/public/nafoud-proposal-review.pdf', width: '16in', height: '9in', printBackground: true });
   await browser.close();
 })();
